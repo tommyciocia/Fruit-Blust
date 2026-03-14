@@ -12,33 +12,24 @@
 <link rel="stylesheet" href="style.css">
 <style>
 .obj-page{gap:9px;}
-
-/* Difficulty tabs */
 .diff-tabs{display:flex;gap:6px;width:100%;}
-.diff-tab{
-  flex:1;padding:9px 0;border-radius:12px;cursor:pointer;text-align:center;
-  font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;
-  background:var(--glass);border:1px solid var(--gb);color:rgba(255,255,255,.55);
-  transition:all .18s;
-}
+.diff-tab{flex:1;padding:9px 0;border-radius:12px;cursor:pointer;text-align:center;font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;background:var(--glass);border:1px solid var(--gb);color:rgba(255,255,255,.55);transition:all .18s;}
 .diff-tab.active-easy{background:rgba(46,204,113,.18);border-color:#2ecc71;color:#2ecc71;}
 .diff-tab.active-medium{background:rgba(241,196,15,.18);border-color:#f1c40f;color:#f1c40f;}
 .diff-tab.active-hard{background:rgba(231,76,60,.18);border-color:#e74c3c;color:#e74c3c;}
-
-/* Current objective — big card */
+.progress-header{width:100%;background:var(--glass);border:1px solid var(--gb);border-radius:14px;padding:11px 14px;}
+.ph-row{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px;}
+.ph-title{font-family:'Fredoka One',cursive;font-size:15px;color:#fff;}
+.ph-sub{font-size:10px;color:rgba(255,255,255,.35);letter-spacing:1px;text-transform:uppercase;margin-top:1px;}
+.ph-count{font-family:'Fredoka One',cursive;font-size:26px;color:var(--gold);line-height:1;}
+.ph-bar-wrap{height:7px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.ph-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),#ff9f43);transition:width .6s cubic-bezier(.34,1.56,.64,1);}
 .current-obj-wrap{width:100%;}
 .current-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;text-align:center;}
-.current-card{
-  background:var(--glass);border:2px solid rgba(255,215,0,.35);
-  border-radius:16px;padding:14px 14px;width:100%;
-  position:relative;overflow:hidden;
-}
-.current-card::before{
-  content:'';position:absolute;top:0;left:0;right:0;height:3px;
-  background:linear-gradient(90deg,var(--gold),#ff9f43);
-}
+.current-card{background:var(--glass);border:2px solid rgba(255,215,0,.35);border-radius:16px;padding:14px;width:100%;position:relative;overflow:hidden;}
+.current-card::before{content:'';position:absolute;top:0;left:0;right:0;height:3px;background:linear-gradient(90deg,var(--gold),#ff9f43);}
 .cc-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
-.cc-icon{font-size:34px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,215,0,.3));}
+.cc-icon{font-size:34px;line-height:1;}
 .cc-info{flex:1;}
 .cc-name{font-family:'Fredoka One',cursive;font-size:18px;color:#fff;margin-bottom:2px;}
 .cc-desc{font-size:13px;color:rgba(255,255,255,.6);line-height:1.4;}
@@ -50,17 +41,12 @@
 .cc-bar-wrap{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
 .cc-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),#ff9f43);transition:width .5s cubic-bezier(.34,1.56,.64,1);}
 .cc-note{font-size:10px;color:rgba(255,215,0,.6);text-align:center;margin-top:6px;font-style:italic;}
-
-/* All objectives list */
-.all-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;text-align:center;}
+.section-label{font-size:10px;color:rgba(255,255,255,.32);text-transform:uppercase;letter-spacing:1.5px;text-align:center;width:100%;}
 .obj-grid{display:flex;flex-direction:column;gap:7px;width:100%;}
-.obj-row{
-  background:var(--glass);border:1px solid var(--gb);border-radius:12px;
-  padding:9px 12px;display:flex;align-items:center;gap:10px;
-}
+.obj-row{background:var(--glass);border:1px solid var(--gb);border-radius:12px;padding:9px 12px;display:flex;align-items:center;gap:10px;}
 .obj-row.obj-active{border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.05);}
 .obj-row.obj-done{border-color:rgba(46,204,113,.3);background:rgba(46,204,113,.05);}
-.obj-row.obj-locked{opacity:.45;}
+.obj-row.obj-upcoming{opacity:.7;}
 .or-icon{font-size:18px;min-width:26px;text-align:center;}
 .or-info{flex:1;min-width:0;}
 .or-name{font-size:12px;font-weight:900;color:#fff;margin-bottom:1px;}
@@ -68,15 +54,18 @@
 .or-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:52px;}
 .or-reward{font-family:'Fredoka One',cursive;font-size:13px;color:var(--gold);}
 .or-status{font-size:18px;}
-.or-idx{font-size:10px;color:rgba(255,255,255,.3);}
 .or-prog{font-size:10px;color:rgba(255,255,255,.4);}
-
-/* Mini progress bar in list */
 .or-bar-wrap{height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px;overflow:hidden;}
 .or-bar{height:100%;border-radius:2px;background:var(--gold);}
 .or-bar.done{background:var(--green);}
+.hidden-card{width:100%;border-radius:16px;padding:20px 16px;text-align:center;background:rgba(255,255,255,.03);border:2px dashed rgba(255,255,255,.12);position:relative;overflow:hidden;}
+.hidden-card::before{content:'';position:absolute;inset:0;background:repeating-linear-gradient(45deg,transparent,transparent 10px,rgba(255,255,255,.012) 10px,rgba(255,255,255,.012) 20px);}
+.hc-locks{font-size:28px;letter-spacing:4px;display:block;margin-bottom:8px;opacity:.45;}
+.hc-title{font-family:'Fredoka One',cursive;font-size:16px;color:rgba(255,255,255,.4);margin-bottom:5px;}
+.hc-sub{font-size:11px;color:rgba(255,255,255,.22);line-height:1.5;}
+.hc-pill{display:inline-flex;align-items:center;gap:6px;margin-top:12px;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:20px;padding:5px 16px;font-size:12px;font-weight:900;color:rgba(255,255,255,.38);letter-spacing:.5px;}
+.hc-pill-dot{width:6px;height:6px;border-radius:50%;background:rgba(255,255,255,.3);}
 </style>
-
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -84,9 +73,7 @@ if('serviceWorker' in navigator){
     reg.addEventListener('updatefound', () => {
       const sw = reg.installing;
       sw.addEventListener('statechange', () => {
-        if(sw.state === 'installed' && navigator.serviceWorker.controller){
-          window.location.reload();
-        }
+        if(sw.state === 'installed' && navigator.serviceWorker.controller) window.location.reload();
       });
     });
   });
@@ -105,17 +92,26 @@ if('serviceWorker' in navigator){
     <div class="page-title">🎯 Obiettivi</div>
   </div>
 
-  <!-- Difficulty tabs -->
   <div class="diff-tabs">
     <button class="diff-tab" data-diff="easy">🌱 Facile</button>
     <button class="diff-tab" data-diff="medium">🔥 Medio</button>
     <button class="diff-tab" data-diff="hard">💀 Difficile</button>
   </div>
 
-  <!-- Current active objective -->
+  <div class="progress-header">
+    <div class="ph-row">
+      <div>
+        <div class="ph-title">Progressi</div>
+        <div class="ph-sub">obiettivi completati</div>
+      </div>
+      <div class="ph-count" id="ph-count">0 / 30</div>
+    </div>
+    <div class="ph-bar-wrap"><div class="ph-bar" id="ph-bar" style="width:0%"></div></div>
+  </div>
+
   <div class="current-obj-wrap">
     <div class="current-label">Obiettivo attuale</div>
-    <div class="current-card" id="current-card">
+    <div class="current-card">
       <div class="cc-head">
         <div class="cc-icon" id="cc-icon">🎯</div>
         <div class="cc-info">
@@ -135,9 +131,19 @@ if('serviceWorker' in navigator){
     </div>
   </div>
 
-  <!-- All 10 objectives for this difficulty -->
-  <div class="all-label" id="all-label">Tutti gli obiettivi — 0/10 completati</div>
+  <div class="section-label" id="section-label"></div>
   <div class="obj-grid" id="obj-grid"></div>
+
+  <div class="hidden-card" id="hidden-card" style="display:none;">
+    <span class="hc-locks">🔒🔒🔒</span>
+    <div class="hc-title">Sfide nascoste</div>
+    <div class="hc-sub">Completa le sfide visibili per<br>scoprire i prossimi obiettivi</div>
+    <div class="hc-pill">
+      <div class="hc-pill-dot"></div>
+      <span id="hc-count">+25 nascoste</span>
+      <div class="hc-pill-dot"></div>
+    </div>
+  </div>
 
 </div>
 </div>
@@ -145,55 +151,51 @@ if('serviceWorker' in navigator){
 <script src="data.js"></script>
 <script>
 const $=id=>document.getElementById(id);
+const VISIBLE_AHEAD = 5;
 let activeDiff = sessionStorage.getItem('fb_diff')||'easy';
 
-// ── Render ──
 function render(){
   const objs = OBJECTIVES[activeDiff];
   const state = getObjState(activeDiff);
   const idx = Math.min(state.currentIdx, objs.length-1);
   const completed = new Set(state.completed||[]);
+  const doneCount = completed.size;
 
-  // Set active tab
   document.querySelectorAll('.diff-tab').forEach(t=>{
-    t.className = 'diff-tab' + (t.dataset.diff===activeDiff?' active-'+activeDiff:'');
+    t.className='diff-tab'+(t.dataset.diff===activeDiff?' active-'+activeDiff:'');
   });
 
-  // Current objective card
+  $('ph-count').textContent = doneCount+' / '+objs.length;
+  $('ph-bar').style.width = Math.round(doneCount/objs.length*100)+'%';
+
   const cur = objs[idx];
   const prog = getProgress(cur, activeDiff);
-  const pct = Math.min(100, Math.round(prog/cur.target*100));
   const isDone = completed.has(cur.id);
-
   $('cc-icon').textContent = cur.icon;
   $('cc-name').textContent = cur.name;
   $('cc-desc').textContent = cur.desc;
-  $('cc-reward').textContent = '+' + cur.reward.toLocaleString() + ' pt bonus';
-  $('cc-prog-val').textContent = Math.min(prog,cur.target) + ' / ' + cur.target;
-  $('cc-bar').style.width = pct+'%';
-  if(isDone){
-    $('cc-note').textContent = '✅ Completato! Vai in partita per sbloccare il prossimo.';
-    $('cc-bar').style.background = 'var(--green)';
-  } else {
-    $('cc-note').textContent = idx+1 < objs.length ? `Obiettivo ${idx+1} di ${objs.length}` : 'Ultimo obiettivo!';
-    $('cc-bar').style.background = '';
-  }
+  $('cc-reward').textContent = '+'+cur.reward.toLocaleString()+' pt bonus';
+  $('cc-prog-val').textContent = Math.min(prog,cur.target)+' / '+cur.target;
+  $('cc-bar').style.width = Math.min(100,Math.round(prog/cur.target*100))+'%';
+  $('cc-bar').style.background = isDone ? 'var(--green)' : '';
+  $('cc-note').textContent = isDone
+    ? '✅ Completato! Vai in partita per sbloccare il prossimo.'
+    : (idx+1 < objs.length ? `Obiettivo ${idx+1} di ${objs.length}` : 'Ultimo obiettivo!');
 
-  // Full list
-  const doneCount = completed.size;
-  $('all-label').textContent = `Tutti gli obiettivi — ${doneCount}/10 completati`;
-
+  const visibleEnd = idx + VISIBLE_AHEAD;
   const grid = $('obj-grid');
   grid.innerHTML = '';
+
   objs.forEach((o,i)=>{
     const done = completed.has(o.id);
     const active = i === idx;
-    const locked = i > idx && !done;
+    const upcoming = !done && !active && i < visibleEnd;
+    if(!done && !active && !upcoming) return;
+
     const p = done ? o.target : (active ? Math.min(getProgress(o,activeDiff),o.target) : 0);
     const pPct = Math.round(p/o.target*100);
-
     const row = document.createElement('div');
-    row.className = 'obj-row' + (active?' obj-active':done?' obj-done':locked?' obj-locked':'');
+    row.className = 'obj-row'+(active?' obj-active':done?' obj-done':' obj-upcoming');
     row.innerHTML = `
       <div class="or-icon">${o.icon}</div>
       <div class="or-info">
@@ -204,34 +206,38 @@ function render(){
       <div class="or-right">
         <div class="or-status">${done?'✅':active?'🔓':'🔒'}</div>
         <div class="or-reward">+${o.reward.toLocaleString()}</div>
-        <div class="or-prog">${done||active?p+'/'+o.target:''}</div>
+        <div class="or-prog">${done||active ? p+'/'+o.target : ''}</div>
       </div>`;
     grid.appendChild(row);
   });
+
+  const ahead = Math.min(VISIBLE_AHEAD-1, objs.length-1-idx);
+  $('section-label').textContent = doneCount > 0
+    ? `${doneCount} completat${doneCount===1?'o':'i'} · ${ahead} prossim${ahead===1?'a':'e'} visibili`
+    : `${ahead} sfide visibili · completa per scoprire le altre`;
+
+  const hiddenCount = objs.length - visibleEnd;
+  const hc = $('hidden-card');
+  if(hiddenCount > 0){
+    hc.style.display = 'block';
+    $('hc-count').textContent = '+'+hiddenCount+' nascost'+(hiddenCount===1?'a':'e');
+  } else {
+    hc.style.display = 'none';
+  }
 }
 
-// Get best progress for an objective from stored stats
 function getProgress(obj, d){
   try{
     const raw = localStorage.getItem('fb_stats_'+d);
     if(!raw) return 0;
-    const stats = JSON.parse(raw);
-    const v = stats[obj.type]||0;
-    // score and combo/bigShape/multiLine are max-values not cumulative
-    return v;
+    return JSON.parse(raw)[obj.type]||0;
   }catch(e){ return 0; }
 }
 
-// Tab switching
 document.querySelectorAll('.diff-tab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    activeDiff = t.dataset.diff;
-    render();
-  });
+  t.addEventListener('click',()=>{ activeDiff=t.dataset.diff; render(); });
 });
-
 $('back-btn').addEventListener('click',()=>{ location.href='index.html'; });
-
 render();
 </script>
 </body>
