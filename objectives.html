@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>🎯 Obiettivi — FruitBlast</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.obj-page{gap:14px;padding-top:12px;}
+
+/* Difficulty tabs */
+.diff-tabs{display:flex;gap:6px;width:100%;}
+.diff-tab{
+  flex:1;padding:9px 0;border-radius:12px;cursor:pointer;text-align:center;
+  font-size:13px;font-weight:700;font-family:'Nunito',sans-serif;
+  background:var(--glass);border:1px solid var(--gb);color:rgba(255,255,255,.55);
+  transition:all .18s;
+}
+.diff-tab.active-easy{background:rgba(46,204,113,.18);border-color:#2ecc71;color:#2ecc71;}
+.diff-tab.active-medium{background:rgba(241,196,15,.18);border-color:#f1c40f;color:#f1c40f;}
+.diff-tab.active-hard{background:rgba(231,76,60,.18);border-color:#e74c3c;color:#e74c3c;}
+
+/* Current objective — big card */
+.current-obj-wrap{width:100%;}
+.current-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;text-align:center;}
+.current-card{
+  background:var(--glass);border:2px solid rgba(255,215,0,.35);
+  border-radius:20px;padding:20px 18px;width:100%;
+  position:relative;overflow:hidden;
+}
+.current-card::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(90deg,var(--gold),#ff9f43);
+}
+.cc-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
+.cc-icon{font-size:44px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,215,0,.3));}
+.cc-info{flex:1;}
+.cc-name{font-family:'Fredoka One',cursive;font-size:22px;color:#fff;margin-bottom:3px;}
+.cc-desc{font-size:13px;color:rgba(255,255,255,.6);line-height:1.4;}
+.cc-reward{font-family:'Fredoka One',cursive;font-size:16px;color:var(--gold);margin-top:6px;}
+.cc-progress{margin-top:12px;}
+.cc-prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
+.cc-prog-label{font-size:12px;color:rgba(255,255,255,.5);}
+.cc-prog-val{font-size:13px;font-weight:900;color:#fff;}
+.cc-bar-wrap{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
+.cc-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),#ff9f43);transition:width .5s cubic-bezier(.34,1.56,.64,1);}
+.cc-note{font-size:11px;color:rgba(255,215,0,.6);text-align:center;margin-top:10px;font-style:italic;}
+
+/* All objectives list */
+.all-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;text-align:center;}
+.obj-grid{display:flex;flex-direction:column;gap:7px;width:100%;}
+.obj-row{
+  background:var(--glass);border:1px solid var(--gb);border-radius:14px;
+  padding:11px 14px;display:flex;align-items:center;gap:12px;
+}
+.obj-row.obj-active{border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.05);}
+.obj-row.obj-done{border-color:rgba(46,204,113,.3);background:rgba(46,204,113,.05);}
+.obj-row.obj-locked{opacity:.45;}
+.or-icon{font-size:22px;min-width:30px;text-align:center;}
+.or-info{flex:1;min-width:0;}
+.or-name{font-size:13px;font-weight:900;color:#fff;margin-bottom:2px;}
+.or-desc{font-size:11px;color:rgba(255,255,255,.45);line-height:1.3;}
+.or-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:52px;}
+.or-reward{font-family:'Fredoka One',cursive;font-size:13px;color:var(--gold);}
+.or-status{font-size:18px;}
+.or-idx{font-size:10px;color:rgba(255,255,255,.3);}
+.or-prog{font-size:10px;color:rgba(255,255,255,.4);}
+
+/* Mini progress bar in list */
+.or-bar-wrap{height:3px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:4px;overflow:hidden;}
+.or-bar{height:100%;border-radius:2px;background:var(--gold);}
+.or-bar.done{background:var(--green);}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="page obj-page fade-in">
+
+  <div class="page-header">
+    <button class="back-btn" id="back-btn">← Menu</button>
+    <div class="page-title">🎯 Obiettivi</div>
+  </div>
+
+  <!-- Difficulty tabs -->
+  <div class="diff-tabs">
+    <button class="diff-tab" data-diff="easy">🌱 Facile</button>
+    <button class="diff-tab" data-diff="medium">🔥 Medio</button>
+    <button class="diff-tab" data-diff="hard">💀 Difficile</button>
+  </div>
+
+  <!-- Current active objective -->
+  <div class="current-obj-wrap">
+    <div class="current-label">Obiettivo attuale</div>
+    <div class="current-card" id="current-card">
+      <div class="cc-head">
+        <div class="cc-icon" id="cc-icon">🎯</div>
+        <div class="cc-info">
+          <div class="cc-name" id="cc-name">—</div>
+          <div class="cc-desc" id="cc-desc">—</div>
+          <div class="cc-reward" id="cc-reward">+0 pt</div>
+        </div>
+      </div>
+      <div class="cc-progress">
+        <div class="cc-prog-row">
+          <span class="cc-prog-label">Progresso</span>
+          <span class="cc-prog-val" id="cc-prog-val">0 / 0</span>
+        </div>
+        <div class="cc-bar-wrap"><div class="cc-bar" id="cc-bar" style="width:0%"></div></div>
+      </div>
+      <div class="cc-note" id="cc-note"></div>
+    </div>
+  </div>
+
+  <!-- All 10 objectives for this difficulty -->
+  <div class="all-label" id="all-label">Tutti gli obiettivi — 0/10 completati</div>
+  <div class="obj-grid" id="obj-grid"></div>
+
+</div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let activeDiff = sessionStorage.getItem('fb_diff')||'easy';
+
+// ── Render ──
+function render(){
+  const objs = OBJECTIVES[activeDiff];
+  const state = getObjState(activeDiff);
+  const idx = Math.min(state.currentIdx, objs.length-1);
+  const completed = new Set(state.completed||[]);
+
+  // Set active tab
+  document.querySelectorAll('.diff-tab').forEach(t=>{
+    t.className = 'diff-tab' + (t.dataset.diff===activeDiff?' active-'+activeDiff:'');
+  });
+
+  // Current objective card
+  const cur = objs[idx];
+  const prog = getProgress(cur, activeDiff);
+  const pct = Math.min(100, Math.round(prog/cur.target*100));
+  const isDone = completed.has(cur.id);
+
+  $('cc-icon').textContent = cur.icon;
+  $('cc-name').textContent = cur.name;
+  $('cc-desc').textContent = cur.desc;
+  $('cc-reward').textContent = '+' + cur.reward.toLocaleString() + ' pt bonus';
+  $('cc-prog-val').textContent = Math.min(prog,cur.target) + ' / ' + cur.target;
+  $('cc-bar').style.width = pct+'%';
+  if(isDone){
+    $('cc-note').textContent = '✅ Completato! Vai in partita per sbloccare il prossimo.';
+    $('cc-bar').style.background = 'var(--green)';
+  } else {
+    $('cc-note').textContent = idx+1 < objs.length ? `Obiettivo ${idx+1} di ${objs.length}` : 'Ultimo obiettivo!';
+    $('cc-bar').style.background = '';
+  }
+
+  // Full list
+  const doneCount = completed.size;
+  $('all-label').textContent = `Tutti gli obiettivi — ${doneCount}/10 completati`;
+
+  const grid = $('obj-grid');
+  grid.innerHTML = '';
+  objs.forEach((o,i)=>{
+    const done = completed.has(o.id);
+    const active = i === idx;
+    const locked = i > idx && !done;
+    const p = done ? o.target : (active ? Math.min(getProgress(o,activeDiff),o.target) : 0);
+    const pPct = Math.round(p/o.target*100);
+
+    const row = document.createElement('div');
+    row.className = 'obj-row' + (active?' obj-active':done?' obj-done':locked?' obj-locked':'');
+    row.innerHTML = `
+      <div class="or-icon">${o.icon}</div>
+      <div class="or-info">
+        <div class="or-name">${o.name}</div>
+        <div class="or-desc">${o.desc}</div>
+        <div class="or-bar-wrap"><div class="or-bar${done?' done':''}" style="width:${pPct}%"></div></div>
+      </div>
+      <div class="or-right">
+        <div class="or-status">${done?'✅':active?'🔓':'🔒'}</div>
+        <div class="or-reward">+${o.reward.toLocaleString()}</div>
+        <div class="or-prog">${done||active?p+'/'+o.target:''}</div>
+      </div>`;
+    grid.appendChild(row);
+  });
+}
+
+// Get best progress for an objective from stored stats
+function getProgress(obj, d){
+  try{
+    const raw = localStorage.getItem('fb_stats_'+d);
+    if(!raw) return 0;
+    const stats = JSON.parse(raw);
+    const v = stats[obj.type]||0;
+    // score and combo/bigShape/multiLine are max-values not cumulative
+    return v;
+  }catch(e){ return 0; }
+}
+
+// Tab switching
+document.querySelectorAll('.diff-tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    activeDiff = t.dataset.diff;
+    render();
+  });
+});
+
+$('back-btn').addEventListener('click',()=>{ location.href='index.html'; });
+
+render();
+</script>
+</body>
+</html>

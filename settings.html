@@ -1,0 +1,108 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>⚙️ Impostazioni — FruitBlast</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.set-page{gap:12px;padding-top:12px;}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="page set-page fade-in">
+
+  <div class="page-header">
+    <button class="back-btn" id="back-btn">← Menu</button>
+    <div class="page-title">⚙️ Impostazioni</div>
+  </div>
+
+  <div class="glass-card">
+    <div class="srow">
+      <div class="sinfo"><div class="slabel">✨ Animazioni</div><div class="ssub">Effetti visivi di gioco</div></div>
+      <button class="toggle" id="tog-anim"></button>
+    </div>
+    <div class="sep"></div>
+    <div class="srow">
+      <div class="sinfo"><div class="slabel">🌈 Tema frutta</div><div class="ssub">Emoji colorati come blocchi</div></div>
+      <button class="toggle" id="tog-fruit"></button>
+    </div>
+    <div class="sep"></div>
+    <div class="srow">
+      <div class="sinfo"><div class="slabel">💣 Blocchi speciali</div><div class="ssub">Bomba, fulmini, ghiaccio</div></div>
+      <button class="toggle" id="tog-special"></button>
+    </div>
+    <div class="sep"></div>
+    <div class="srow">
+      <div class="sinfo"><div class="slabel">⚡ Velocità animazioni</div></div>
+      <div class="spd-btns">
+        <button class="spd-btn" data-speed="slow">Lenta</button>
+        <button class="spd-btn" data-speed="normal">Normale</button>
+        <button class="spd-btn" data-speed="fast">Veloce</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="how-box">
+    <div class="how-title">Come si gioca</div>
+    <div class="how-row"><span class="how-icon">✋</span>Tieni premuto una forma e trascinala sulla griglia. Solleva il dito per posizionarla</div>
+    <div class="how-row"><span class="how-icon">✅</span>Completa una riga o colonna intera per cancellarla e fare punti</div>
+    <div class="how-row"><span class="how-icon">🔢</span>Punti forma: +1 per ogni blocco piazzato (forma da 5 = +5 punti)</div>
+    <div class="how-row"><span class="how-icon">🔥</span>Combo: cancella più linee consecutive per moltiplicare i punti. La combo sopravvive qualche mossa in più se sei vicino a completare linee</div>
+    <div class="how-row"><span class="how-icon">🎯</span>Missione linee: ogni N linee cancellate ottieni +500 pt bonus</div>
+    <div class="how-row"><span class="how-icon">💣</span>Bomba — distrugge un'area 3×3 (+80 pt)</div>
+    <div class="how-row"><span class="how-icon">⚡</span>Fulmine ⚡ — elimina tutta la riga orizzontale (+150 pt)</div>
+    <div class="how-row"><span class="how-icon">🌩️</span>Fulmine 🌩️ — elimina tutta la colonna verticale (+150 pt)</div>
+    <div class="how-row"><span class="how-icon">❄️</span>Ghiaccio — congela le 8 celle attorno per 1 turno (+30 pt)</div>
+    <div class="how-row"><span class="how-icon">💀</span>Game over quando non puoi piazzare nessuna delle 3 forme</div>
+  </div>
+
+  <div class="glass-card danger-card">
+    <div class="srow">
+      <div class="sinfo">
+        <div class="slabel" style="color:#e74c3c;">🗑️ Azzera tutto</div>
+        <div class="ssub" style="color:rgba(231,76,60,.55);">Record, obiettivi e statistiche</div>
+      </div>
+      <button class="btn-danger" id="reset-btn">Reset</button>
+    </div>
+  </div>
+
+</div>
+</div>
+
+<script src="data.js"></script>
+<script>
+const $=id=>document.getElementById(id);
+let SET = getSettings();
+
+function applyUI(){
+  ['anim','fruit','special'].forEach(k=>{
+    const t=$('tog-'+k); if(t) t.className='toggle'+(SET[k]?' on':'');
+  });
+  document.querySelectorAll('.spd-btn').forEach(b=>b.classList.toggle('active',b.dataset.speed===SET.speed));
+}
+
+['anim','fruit','special'].forEach(k=>{
+  $('tog-'+k).addEventListener('click',()=>{ SET[k]=!SET[k]; applyUI(); saveSettings(SET); });
+});
+document.querySelectorAll('.spd-btn').forEach(b=>{
+  b.addEventListener('click',()=>{ SET.speed=b.dataset.speed; applyUI(); saveSettings(SET); });
+});
+$('reset-btn').addEventListener('click',()=>{
+  if(!confirm('Sei sicuro? Verranno cancellati record, obiettivi e statistiche.')) return;
+  ['easy','medium','hard'].forEach(d=>{
+    localStorage.removeItem('fb_best_'+d);
+    localStorage.removeItem('fb_obj_'+d);
+    localStorage.removeItem('fb_stats_'+d);
+  });
+  alert('✅ Dati azzerati!');
+});
+$('back-btn').addEventListener('click',()=>{ location.href='index.html'; });
+
+applyUI();
+</script>
+</body>
+</html>
