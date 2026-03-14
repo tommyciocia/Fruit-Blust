@@ -3,7 +3,7 @@
 //  Cambia CACHE_VERSION ogni deploy per forzare aggiornamento
 // ═══════════════════════════════════════════
 
-const CACHE_VERSION = 'fruitblast-v12';
+const CACHE_VERSION = 'fruitblast-v13';
 const ASSETS = [
   './',
   './index.html',
@@ -14,7 +14,6 @@ const ASSETS = [
   './style.css',
   './data.js',
   './foto_sfondo.png',
-  './foto_sfodno.png',
 ];
 
 // Install: metti in cache tutti i file

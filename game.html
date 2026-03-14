@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="foto_sfodno.png">
-<link rel="apple-touch-icon" href="foto_sfodno.png">
+<link rel="icon" type="image/png" href="foto_sfondo.png">
+<link rel="apple-touch-icon" href="foto_sfondo.png">
 <meta name="apple-mobile-web-app-title" content="FruitBlast">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -67,7 +67,7 @@
  
 /* Shapes */
 #shapes-area{display:flex;gap:7px;justify-content:center;width:100%;flex-shrink:0;}
-.shape-slot{touch-action:none;background:rgba(255,255,255,.07);border-radius:13px;
+.shape-slot{touch-action:manipulation;background:rgba(255,255,255,.07);border-radius:13px;
   border:2px solid rgba(255,255,255,.11);
   flex:1;max-width:32%;min-height:76px;
   display:flex;align-items:center;justify-content:center;
@@ -212,6 +212,8 @@ let SET    = getSettings();
 let GS, grid, score, shapes, sel, combo, comboGrace, lines, mission, frozen;
 let dragShape=null, dragAnchorR=0, dragAnchorC=0, dragPreviewR=-1, dragPreviewC=-1;
 let mouseDown=false;
+let touchPendingIdx=-1, touchPendingX=0, touchPendingY=0;
+const DRAG_THRESHOLD=8; // pixel di movimento minimo per iniziare drag
  
 // ── per-run stats (tracked for objectives) ──
 let runStats={};
@@ -376,27 +378,14 @@ function renderGrid(){
 }
  
 function bindGrid(){
+  // Solo click per tap-select desktop — touch gestito globalmente
   const old=$('grid'), ng=old.cloneNode(true);
   old.parentNode.replaceChild(ng,old);
   ng.querySelectorAll('.cell').forEach(cell=>{
-    cell.addEventListener('click',()=>{ if(sel)doPlace(+cell.dataset.row,+cell.dataset.col); });
-    cell.addEventListener('mouseenter',()=>{ if(sel)previewAt(+cell.dataset.row,+cell.dataset.col); });
-    cell.addEventListener('mouseleave',()=>{ if(sel)clearHL(); });
+    cell.addEventListener('click',()=>{ if(sel&&!dragShape)doPlace(+cell.dataset.row,+cell.dataset.col); });
+    cell.addEventListener('mouseenter',()=>{ if(sel&&!dragShape)previewAt(+cell.dataset.row,+cell.dataset.col); });
+    cell.addEventListener('mouseleave',()=>{ if(sel&&!dragShape)clearHL(); });
   });
-  ng.addEventListener('touchmove',e=>{
-    if(!dragShape)return; e.preventDefault();
-    const t=e.touches[0];
-    positionGhost(t.clientX,t.clientY);
-    const [tr,tc]=clientToCell(t.clientX,t.clientY);
-    const pr=tr-dragAnchorR, pc=tc-dragAnchorC;
-    if(pr!==dragPreviewR||pc!==dragPreviewC){dragPreviewR=pr;dragPreviewC=pc;previewAt(pr,pc);}
-  },{passive:false});
-  ng.addEventListener('touchend',e=>{
-    if(!dragShape)return; e.preventDefault();
-    const t=e.changedTouches[0];
-    const [tr,tc]=clientToCell(t.clientX,t.clientY);
-    endDrag(tr-dragAnchorR, tc-dragAnchorC);
-  },{passive:false});
 }
  
 function clientToCell(cx,cy){
@@ -480,7 +469,14 @@ function genShapes(){
       sg.appendChild(sc);
     }
     slot.appendChild(sg);
-    slot.addEventListener('touchstart',e=>{ if(s.used)return; e.preventDefault(); startDrag(i,e.touches[0].clientX,e.touches[0].clientY); },{passive:false});
+    slot.addEventListener('touchstart',e=>{
+      if(s.used)return;
+      // NON fare preventDefault qui — lascia che il documento gestisca
+      // Segna solo quale shape stiamo per trascinare
+      touchPendingIdx=i;
+      touchPendingX=e.touches[0].clientX;
+      touchPendingY=e.touches[0].clientY;
+    },{passive:true});
     slot.addEventListener('click',()=>{ if(s.used||dragShape)return; pickShape(i); });
     area.appendChild(slot); s.el=slot;
   });
@@ -537,6 +533,7 @@ function endDrag(row,col){
   }
 }
  
+// ── MOUSE (desktop) ──
 document.addEventListener('mousedown',e=>{
   const slot=e.target.closest('.shape-slot');
   if(slot){
@@ -572,6 +569,69 @@ document.addEventListener('click',e=>{
   if(dragShape)return;
   const cell=e.target.closest('.cell');
   if(cell&&sel&&!sel.used) doPlace(+cell.dataset.row,+cell.dataset.col);
+});
+
+// ── TOUCH GLOBALE — un unico listener per tutto il drag su mobile ──
+// Così il touch non si perde mai quando il dito esce dallo shape-slot
+
+document.addEventListener('touchmove',e=>{
+  const t=e.touches[0];
+
+  // Avvia drag se c'è uno shape pending e il dito si è mosso abbastanza
+  if(!dragShape && touchPendingIdx>=0){
+    const dx=t.clientX-touchPendingX, dy=t.clientY-touchPendingY;
+    if(Math.sqrt(dx*dx+dy*dy)>DRAG_THRESHOLD){
+      startDrag(touchPendingIdx, touchPendingX, touchPendingY);
+      touchPendingIdx=-1;
+    }
+  }
+
+  if(!dragShape) return;
+  e.preventDefault(); // blocca scroll solo mentre si trascina
+
+  // Aggiorna ghost in tempo reale
+  positionGhost(t.clientX,t.clientY);
+
+  // Trova la cella sotto il dito
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  if(el&&el.classList.contains('cell')){
+    const pr=+el.dataset.row-dragAnchorR, pc=+el.dataset.col-dragAnchorC;
+    if(pr!==dragPreviewR||pc!==dragPreviewC){
+      dragPreviewR=pr; dragPreviewC=pc;
+      previewAt(pr,pc);
+    }
+  } else {
+    clearHL();
+  }
+},{passive:false});
+
+document.addEventListener('touchend',e=>{
+  touchPendingIdx=-1; // annulla pending se era solo un tap
+
+  if(!dragShape) return;
+  e.preventDefault();
+
+  const t=e.changedTouches[0];
+  const el=document.elementFromPoint(t.clientX,t.clientY);
+  let row=-1,col=-1;
+  if(el&&el.classList.contains('cell')){
+    row=+el.dataset.row-dragAnchorR;
+    col=+el.dataset.col-dragAnchorC;
+  } else {
+    // Cerca la cella più vicina al dito
+    const [tr,tc]=clientToCell(t.clientX,t.clientY);
+    row=tr-dragAnchorR; col=tc-dragAnchorC;
+  }
+  endDrag(row,col);
+},{passive:false});
+
+document.addEventListener('touchcancel',()=>{
+  touchPendingIdx=-1;
+  if(dragShape){
+    hideGhost(); clearHL();
+    if(dragShape.el) dragShape.el.classList.remove('dragging-source','selected');
+    dragShape=null; sel=null;
+  }
 });
  
 // ════════════════════════════════════════
