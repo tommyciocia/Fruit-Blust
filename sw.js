@@ -2,7 +2,6 @@
 //  FruitBlast — Service Worker
 //  Cambia CACHE_VERSION ogni deploy per forzare aggiornamento
 // ═══════════════════════════════════════════
-
 const CACHE_VERSION = 'fruitblast-v13';
 const ASSETS = [
   './',
@@ -15,7 +14,6 @@ const ASSETS = [
   './data.js',
   './foto_sfondo.png',
 ];
-
 // Install: metti in cache tutti i file
 self.addEventListener('install', e => {
   e.waitUntil(
@@ -24,7 +22,6 @@ self.addEventListener('install', e => {
       .then(() => self.skipWaiting()) // attiva subito senza aspettare il reload
   );
 });
-
 // Activate: elimina tutte le vecchie cache
 self.addEventListener('activate', e => {
   e.waitUntil(
@@ -37,7 +34,6 @@ self.addEventListener('activate', e => {
     ).then(() => self.clients.claim()) // prendi controllo di tutte le tab aperte
   );
 });
-
 // Fetch: network first, poi cache come fallback
 // Così vedi sempre i file aggiornati se sei online
 self.addEventListener('fetch', e => {
