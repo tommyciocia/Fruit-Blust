@@ -14,15 +14,16 @@
 <style>
 /* ── Menu layout ── */
 #menu{
-  padding-top:6px;
-  gap:0;
-  /* vertically center if content fits, scroll if not */
-  justify-content:center;
+  /* space-evenly distributes gaps between all items including top/bottom */
+  justify-content:space-evenly;
   min-height:100%;
+  padding-top:calc(var(--sat) + 4px);
+  padding-bottom:calc(var(--sab) + 6px);
+  gap:0;
 }
 
 /* Logo — più piccolo */
-.logo-wrap{text-align:center;margin-bottom:2px;}
+.logo-wrap{text-align:center;margin:0;}
 .logo-icon{font-size:clamp(28px,7vw,38px);display:block;filter:drop-shadow(0 0 10px rgba(255,107,107,.5));}
 .logo-title{font-family:'Fredoka One',cursive;font-size:clamp(30px,9vw,42px);color:#fff;
   text-shadow:0 0 28px rgba(255,107,107,.5),0 2px 0 rgba(0,0,0,.3);line-height:1;letter-spacing:1px;}
@@ -30,7 +31,7 @@
 
 /* Stats row — best score + bonus affiancati */
 .stats-row{
-  display:flex;gap:8px;width:100%;margin:8px 0 10px;
+  display:flex;gap:8px;width:100%;margin:0;
 }
 .stat-mini{
   flex:1;border-radius:14px;padding:8px 12px;text-align:center;
@@ -62,7 +63,7 @@
 .stat-mini.bonus .sm-sub{color:rgba(200,150,255,.4);}
 
 /* Difficulty cards */
-#diff-section{width:100%;margin-bottom:10px;}
+#diff-section{width:100%;margin:0;}
 .diff-header{font-size:10px;color:rgba(255,255,255,.38);letter-spacing:2px;text-transform:uppercase;text-align:center;margin-bottom:8px;}
 #diff-cards{display:flex;gap:6px;width:100%;}
 .diff-card{
@@ -99,7 +100,7 @@
   font-size:clamp(18px,5.5vw,21px);font-family:'Fredoka One',cursive;
   cursor:pointer;letter-spacing:1px;width:100%;max-width:300px;
   box-shadow:0 5px 16px rgba(255,107,107,.35);
-  margin-bottom:9px;position:relative;overflow:hidden;
+  margin:0;position:relative;overflow:hidden;
 }
 .btn-primary::after{content:'';position:absolute;top:0;left:-100%;width:55%;height:100%;
   background:linear-gradient(90deg,transparent,rgba(255,255,255,.14),transparent);

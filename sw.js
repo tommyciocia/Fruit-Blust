@@ -3,7 +3,7 @@
 //  Cambia CACHE_VERSION ogni deploy per forzare aggiornamento
 // ═══════════════════════════════════════════
 
-const CACHE_VERSION = 'fruitblast-v8';
+const CACHE_VERSION = 'fruitblast-v9';
 const ASSETS = [
   './',
   './index.html',
