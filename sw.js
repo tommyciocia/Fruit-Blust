@@ -2,7 +2,7 @@
 //  FruitBlast — Service Worker
 //  Cambia CACHE_VERSION ogni deploy per forzare aggiornamento
 // ═══════════════════════════════════════════
-const CACHE_VERSION = 'fruitblast-v13';
+const CACHE_VERSION = 'fruitblast-v14';
 const ASSETS = [
   './',
   './index.html',
@@ -12,7 +12,7 @@ const ASSETS = [
   './shop.html',
   './style.css',
   './data.js',
-  './foto_sfondo.png',
+  './fruitblast_icon.svg',
 ];
 // Install: metti in cache tutti i file
 self.addEventListener('install', e => {
