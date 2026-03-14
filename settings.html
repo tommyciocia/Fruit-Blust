@@ -101,6 +101,7 @@ $('reset-btn').addEventListener('click',()=>{
     localStorage.removeItem('fb_obj_'+d);
     localStorage.removeItem('fb_stats_'+d);
   });
+  localStorage.removeItem('fb_bonus');
   alert('✅ Dati azzerati!');
 });
 $('back-btn').addEventListener('click',()=>{ location.href='index.html'; });

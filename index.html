@@ -2,6 +2,9 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<link rel="icon" type="image/png" href="foto_sfodno.png">
+<link rel="apple-touch-icon" href="foto_sfodno.png">
+<meta name="apple-mobile-web-app-title" content="FruitBlast">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -55,14 +58,33 @@
 .hard .diff-badge{background:rgba(231,76,60,.16);color:#e74c3c;border:1px solid rgba(231,76,60,.26);}
 
 /* Nav buttons */
-.nav-btns{display:flex;gap:8px;width:100%;max-width:320px;margin-top:2px;}
+.nav-btns{display:flex;flex-wrap:wrap;gap:8px;width:100%;max-width:360px;margin-top:2px;justify-content:center;}
 .nav-btn{
-  flex:1;background:var(--glass);color:rgba(255,255,255,.7);
-  border:1px solid var(--gb);padding:11px 0;border-radius:50px;
-  font-size:14px;font-family:'Nunito',sans-serif;font-weight:700;
+  flex:1;min-width:calc(33% - 6px);background:var(--glass);color:rgba(255,255,255,.7);
+  border:1px solid var(--gb);padding:11px 8px;border-radius:50px;
+  font-size:13px;font-family:'Nunito',sans-serif;font-weight:700;
   cursor:pointer;text-align:center;transition:background .15s;
 }
 .nav-btn:active{background:rgba(255,255,255,.16);}
+
+/* Bonus points card */
+.bonus-card{
+  display:flex;align-items:center;gap:12px;width:100%;
+  background:linear-gradient(135deg,rgba(138,43,226,.18),rgba(75,0,130,.12));
+  border:1px solid rgba(180,100,255,.28);border-radius:16px;
+  padding:11px 16px;margin-bottom:14px;position:relative;overflow:hidden;
+}
+.bonus-card::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent 0%,rgba(180,100,255,.06) 50%,transparent 100%);
+  animation:bonusShimmer 4s infinite;
+}
+@keyframes bonusShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.bonus-gem{font-size:28px;filter:drop-shadow(0 0 8px rgba(200,100,255,.6));flex-shrink:0;}
+.bonus-info{flex:1;min-width:0;}
+.bonus-label{font-size:10px;color:rgba(200,150,255,.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
+.bonus-val{font-family:'Fredoka One',cursive;font-size:clamp(22px,6vw,28px);color:#d4a8ff;line-height:1;}
+.bonus-sub{font-size:10px;color:rgba(200,150,255,.5);margin-top:2px;font-style:italic;}
 </style>
 </head>
 <body>
@@ -79,6 +101,16 @@
     <div class="best-label">Miglior Punteggio</div>
     <div id="menu-best-val">0</div>
     <div class="best-diff-label" id="menu-best-diff"></div>
+  </div>
+
+  <!-- Bonus points -->
+  <div class="bonus-card">
+    <div class="bonus-gem">💎</div>
+    <div class="bonus-info">
+      <div class="bonus-label">Punti Bonus</div>
+      <div class="bonus-val" id="bonus-val">0</div>
+      <div class="bonus-sub">Guadagnati completando obiettivi</div>
+    </div>
   </div>
 
   <div id="diff-section">
@@ -112,6 +144,7 @@
 
   <div class="nav-btns">
     <button class="nav-btn" id="obj-btn">🎯 Obiettivi</button>
+    <button class="nav-btn" id="shop-btn">🛒 Negozio</button>
     <button class="nav-btn" id="settings-btn">⚙️ Impostazioni</button>
   </div>
 
@@ -126,6 +159,11 @@ let diff='easy';
 function updBest(){
   $('menu-best-val').textContent = getBest(diff).toLocaleString();
   $('menu-best-diff').textContent = DCFG[diff].lbl;
+}
+
+function updBonus(){
+  const bp = parseInt(localStorage.getItem('fb_bonus')||'0');
+  $('bonus-val').textContent = bp.toLocaleString();
 }
 
 document.querySelectorAll('.diff-card').forEach(card=>{
@@ -147,11 +185,16 @@ $('obj-btn').addEventListener('click',()=>{
   location.href='objectives.html';
 });
 
+$('shop-btn').addEventListener('click',()=>{
+  location.href='shop.html';
+});
+
 $('settings-btn').addEventListener('click',()=>{
   location.href='settings.html';
 });
 
 updBest();
+updBonus();
 </script>
 </body>
 </html>

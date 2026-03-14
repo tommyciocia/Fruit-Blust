@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<link rel="icon" type="image/png" href="foto_sfodno.png">
+<link rel="apple-touch-icon" href="foto_sfodno.png">
+<meta name="apple-mobile-web-app-title" content="FruitBlast">
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>🛒 Negozio — FruitBlast</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.shop-page{gap:14px;padding-top:12px;}
+
+/* Credits bar pinned at top */
+.credits-bar{
+  width:100%;
+  background:linear-gradient(135deg,rgba(138,43,226,.22),rgba(75,0,130,.15));
+  border:1px solid rgba(180,100,255,.32);
+  border-radius:16px;padding:12px 18px;
+  display:flex;align-items:center;gap:12px;
+  position:relative;overflow:hidden;
+}
+.credits-bar::before{
+  content:'';position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,rgba(180,100,255,.07),transparent);
+  animation:cShimmer 4s infinite;
+}
+@keyframes cShimmer{0%{transform:translateX(-100%)}100%{transform:translateX(100%)}}
+.cb-gem{font-size:30px;filter:drop-shadow(0 0 8px rgba(200,100,255,.7));flex-shrink:0;}
+.cb-info{flex:1;}
+.cb-label{font-size:10px;color:rgba(200,150,255,.7);letter-spacing:1.5px;text-transform:uppercase;margin-bottom:2px;}
+.cb-val{font-family:'Fredoka One',cursive;font-size:clamp(24px,7vw,32px);color:#d4a8ff;line-height:1;}
+.cb-sub{font-size:10px;color:rgba(200,150,255,.45);margin-top:2px;}
+
+/* Empty state */
+.empty-state{
+  display:flex;flex-direction:column;align-items:center;gap:14px;
+  width:100%;padding:32px 20px;
+  background:var(--glass);border:1px solid var(--gb);border-radius:20px;
+  text-align:center;
+}
+.empty-icon{font-size:64px;filter:drop-shadow(0 4px 12px rgba(0,0,0,.4));}
+.empty-title{font-family:'Fredoka One',cursive;font-size:24px;color:#fff;}
+.empty-desc{font-size:13px;color:rgba(255,255,255,.5);line-height:1.6;max-width:280px;}
+
+/* Coming soon categories */
+.soon-grid{display:flex;flex-direction:column;gap:8px;width:100%;}
+.soon-label{font-size:11px;color:rgba(255,255,255,.38);text-transform:uppercase;letter-spacing:1.5px;text-align:center;}
+.soon-row{
+  background:var(--glass);border:1px solid var(--gb);border-radius:14px;
+  padding:13px 16px;display:flex;align-items:center;gap:13px;opacity:.55;
+}
+.soon-icon{font-size:26px;min-width:34px;text-align:center;}
+.soon-info{flex:1;}
+.soon-name{font-size:14px;font-weight:900;color:#fff;margin-bottom:2px;}
+.soon-desc{font-size:11px;color:rgba(255,255,255,.42);line-height:1.3;}
+.soon-badge{
+  font-size:10px;font-weight:900;letter-spacing:.5px;
+  background:rgba(255,255,255,.08);border:1px solid rgba(255,255,255,.14);
+  color:rgba(255,255,255,.45);border-radius:8px;padding:3px 9px;white-space:nowrap;
+}
+</style>
+</head>
+<body>
+<div id="app">
+<div class="page shop-page fade-in">
+
+  <div class="page-header">
+    <button class="back-btn" id="back-btn">← Menu</button>
+    <div class="page-title">🛒 Negozio</div>
+  </div>
+
+  <!-- Credits -->
+  <div class="credits-bar">
+    <div class="cb-gem">💎</div>
+    <div class="cb-info">
+      <div class="cb-label">I tuoi Punti Bonus</div>
+      <div class="cb-val" id="credits-val">0</div>
+      <div class="cb-sub">Da spendere quando il negozio sarà aperto</div>
+    </div>
+  </div>
+
+  <!-- Empty state -->
+  <div class="empty-state">
+    <div class="empty-icon">🚧</div>
+    <div class="empty-title">In arrivo!</div>
+    <div class="empty-desc">
+      Il negozio è ancora in costruzione. Accumula punti bonus completando gli obiettivi — presto potrai spenderli qui!
+    </div>
+  </div>
+
+  <!-- Coming soon previews -->
+  <div class="soon-label">Cosa arriverà</div>
+  <div class="soon-grid">
+
+    <div class="soon-row">
+      <div class="soon-icon">🎨</div>
+      <div class="soon-info">
+        <div class="soon-name">Temi visivi</div>
+        <div class="soon-desc">Cambia l'aspetto della griglia e dei blocchi</div>
+      </div>
+      <div class="soon-badge">Presto</div>
+    </div>
+
+    <div class="soon-row">
+      <div class="soon-icon">⚡</div>
+      <div class="soon-info">
+        <div class="soon-name">Power-up extra</div>
+        <div class="soon-desc">Inizia la partita con blocchi speciali extra</div>
+      </div>
+      <div class="soon-badge">Presto</div>
+    </div>
+
+    <div class="soon-row">
+      <div class="soon-icon">🎲</div>
+      <div class="soon-info">
+        <div class="soon-name">Modalità speciali</div>
+        <div class="soon-desc">Sblocca modalità di gioco alternative</div>
+      </div>
+      <div class="soon-badge">Presto</div>
+    </div>
+
+    <div class="soon-row">
+      <div class="soon-icon">🏅</div>
+      <div class="soon-info">
+        <div class="soon-name">Badge e titoli</div>
+        <div class="soon-desc">Mostra i tuoi traguardi nel menu</div>
+      </div>
+      <div class="soon-badge">Presto</div>
+    </div>
+
+    <div class="soon-row">
+      <div class="soon-icon">🍕</div>
+      <div class="soon-info">
+        <div class="soon-name">Nuovi set di emoji</div>
+        <div class="soon-desc">Cibo, animali, spazio e altro ancora</div>
+      </div>
+      <div class="soon-badge">Presto</div>
+    </div>
+
+  </div>
+
+</div>
+</div>
+
+<script src="data.js"></script>
+<script>
+document.getElementById('back-btn').addEventListener('click',()=>{ location.href='index.html'; });
+document.getElementById('credits-val').textContent = getBonusPoints().toLocaleString();
+</script>
+</body>
+</html>

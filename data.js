@@ -83,6 +83,9 @@ const OBJECTIVES = {
 function getBest(d)  { return parseInt(localStorage.getItem('fb_best_'+d)||'0'); }
 function setBest(d,v){ localStorage.setItem('fb_best_'+d, v); }
 
+function getBonusPoints()  { return parseInt(localStorage.getItem('fb_bonus')||'0'); }
+function addBonusPoints(n) { localStorage.setItem('fb_bonus', getBonusPoints()+n); }
+
 function getObjState(diff) {
   try {
     const s = localStorage.getItem('fb_obj_'+diff);

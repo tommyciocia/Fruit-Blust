@@ -255,6 +255,7 @@ function completeObjective(){
  
   objState.completed.push(activeObj.id);
   score += activeObj.reward;
+  addBonusPoints(activeObj.reward); // accumulate in global bonus wallet
   updScore();
  
   // objective completed (toast removed)
