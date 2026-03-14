@@ -199,7 +199,7 @@ body::before{
  
 /* SHAPES — drag ghost */
 #shapes-area{display:flex;gap:7px;justify-content:center;width:100%;}
-.shape-slot{background:rgba(255,255,255,.07);border-radius:13px;
+.shape-slot{touch-action:none;background:rgba(255,255,255,.07);border-radius:13px;
   border:2px solid rgba(255,255,255,.11);
   flex:1;max-width:32%;min-height:85px;
   display:flex;align-items:center;justify-content:center;
@@ -219,9 +219,11 @@ body::before{
 /* DRAG GHOST */
 #drag-ghost{
   position:fixed;pointer-events:none;z-index:1000;
-  display:none;opacity:.88;transform:translate(-50%,-50%);
-  background:rgba(20,10,40,.7);border-radius:12px;padding:8px;
-  border:2px solid rgba(255,215,0,.5);box-shadow:0 0 20px rgba(255,215,0,.3);
+  display:none;opacity:.9;
+  background:rgba(20,10,40,.82);border-radius:12px;padding:8px;
+  border:2px solid rgba(255,215,0,.6);
+  box-shadow:0 0 24px rgba(255,215,0,.35),0 4px 16px rgba(0,0,0,.5);
+  will-change:left,top;
 }
 #drag-ghost .sgrid{display:grid;}
  
@@ -253,6 +255,55 @@ body::before{
 #fscore{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:20px;
   color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.7);z-index:999;opacity:0;
   transition:opacity .65s,transform .65s;}
+ 
+/* ══ OBJECTIVES SCREEN ══ */
+#obj-screen{gap:12px;padding-top:12px;}
+.obj-header{display:flex;align-items:center;width:100%;gap:10px;margin-bottom:4px;}
+.obj-title{font-family:'Fredoka One',cursive;font-size:clamp(22px,7vw,28px);color:#fff;}
+.obj-subtitle{font-size:12px;color:rgba(255,255,255,.45);text-align:center;width:100%;margin-bottom:4px;}
+.obj-list{display:flex;flex-direction:column;gap:8px;width:100%;}
+.obj-card{
+  background:var(--glass);border:1px solid var(--gb);border-radius:14px;
+  padding:12px 14px;display:flex;align-items:center;gap:12px;
+  transition:border-color .2s,background .2s;
+}
+.obj-card.active{border-color:rgba(255,215,0,.4);background:rgba(255,215,0,.06);}
+.obj-card.done{border-color:rgba(46,204,113,.4);background:rgba(46,204,113,.06);opacity:.7;}
+.obj-icon{font-size:26px;min-width:34px;text-align:center;line-height:1;}
+.obj-info{flex:1;min-width:0;}
+.obj-name{font-size:14px;font-weight:900;color:#fff;margin-bottom:3px;}
+.obj-desc{font-size:11px;color:rgba(255,255,255,.5);line-height:1.3;}
+.obj-right{display:flex;flex-direction:column;align-items:flex-end;gap:4px;min-width:56px;}
+.obj-reward{font-family:'Fredoka One',cursive;font-size:13px;color:var(--gold);}
+.obj-bar-wrap{width:52px;height:5px;background:rgba(255,255,255,.12);border-radius:3px;overflow:hidden;}
+.obj-bar{height:100%;border-radius:3px;background:var(--gold);transition:width .4s;}
+.obj-card.done .obj-bar{background:var(--green);}
+.obj-check{font-size:18px;color:var(--green);}
+/* Notification badge on objectives button */
+#obj-notif{
+  position:absolute;top:-4px;right:-4px;
+  background:var(--red);color:#fff;font-size:10px;font-weight:900;
+  border-radius:8px;padding:1px 5px;min-width:16px;text-align:center;
+  display:none;
+}
+/* In-game objectives button */
+#obj-btn{
+  background:var(--glass);border:1px solid var(--gb);color:#fff;
+  border-radius:10px;cursor:pointer;font-size:13px;font-weight:700;
+  min-height:44px;padding:0 10px;display:flex;align-items:center;gap:4px;
+  position:relative;font-family:'Nunito',sans-serif;
+}
+#obj-btn:active{background:rgba(255,255,255,.18);}
+/* Completed objective toast */
+#obj-toast{
+  position:fixed;bottom:calc(var(--sab) + 80px);left:50%;transform:translateX(-50%) translateY(20px);
+  background:linear-gradient(135deg,rgba(46,204,113,.95),rgba(30,160,80,.95));
+  border-radius:14px;padding:10px 18px;z-index:500;
+  font-size:13px;font-weight:900;color:#fff;text-align:center;
+  box-shadow:0 4px 20px rgba(0,0,0,.4);opacity:0;
+  transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;
+}
+#obj-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 </style>
 </head>
 <body>
@@ -358,7 +409,10 @@ body::before{
 <!-- GAME -->
 <div id="game-screen" class="screen">
   <div class="g-header">
-    <button id="menu-btn">🏠</button>
+    <div style="display:flex;gap:6px;">
+      <button id="menu-btn">🏠</button>
+      <button id="obj-btn">🎯 <span id="obj-active-count">0</span><div id="obj-notif"></div></button>
+    </div>
     <div class="g-logo">🍉 FruitBlast</div>
     <div id="score-area">
       <div class="slbl">SCORE</div>
@@ -377,6 +431,7 @@ body::before{
     <span>❄️ <b id="stat-ice">2</b></span>
     <span>🏆 <b id="best-score">0</b></span>
   </div>
+  <div id="obj-bar-game" style="display:flex;gap:6px;align-items:center;width:100%;"></div>
   <div id="grid-wrap"><div id="grid"></div></div>
   <div id="shapes-area"></div>
 </div>
@@ -396,7 +451,18 @@ body::before{
   <button id="go-menu-btn">🏠 Menu principale</button>
 </div>
  
+ 
+<!-- OBJECTIVES -->
+<div id="obj-screen" class="screen">
+  <div class="obj-header">
+    <button class="back-btn" id="back-obj">← Indietro</button>
+    <div class="obj-title">🎯 Obiettivi</div>
+  </div>
+  <div class="obj-subtitle" id="obj-sub">Completa gli obiettivi per guadagnare punti bonus!</div>
+  <div class="obj-list" id="obj-list"></div>
+</div>
 </div><!-- #app -->
+<div id="obj-toast"></div>
 <div id="drag-ghost"><div class="sgrid" id="ghost-grid"></div></div>
 <div id="fscore"></div>
  
@@ -444,7 +510,8 @@ let diff='easy', cfg=DCFG.easy;
 let SET={anim:true,fruit:true,special:true,speed:'normal'};
 let GS,grid,score,shapes,sel,combo,lines,mission,frozen;
 // drag state
-let dragShape=null, dragOffR=0, dragOffC=0, dragPreviewR=-1, dragPreviewC=-1;
+let dragShape=null, dragAnchorR=0, dragAnchorC=0, dragPreviewR=-1, dragPreviewC=-1;
+let mouseDown=false;
  
 // ══════════════════════════════════════════════
 //  UTILS
@@ -479,6 +546,7 @@ function startGame(){
   const p=$('diff-pill');
   p.textContent=cfg.lbl;
   p.style.cssText=`font-size:11px;font-weight:900;border-radius:10px;padding:0 11px;display:flex;align-items:center;border:1px solid ${cfg.col};color:${cfg.col};background:${cfg.col}22;`;
+  initObjs();
   updScore(); $('best-score').textContent=getBest(diff).toLocaleString(); updMission();
   renderGrid(); genShapes();
   show('game-screen');
@@ -517,9 +585,9 @@ function bindGridEvents(){
   ng.addEventListener('touchmove',e=>{
     if(!dragShape)return; e.preventDefault();
     const t=e.touches[0];
-    moveDragGhost(t.clientX,t.clientY);
+    positionGhost(t.clientX,t.clientY);
     const [tr,tc]=clientToCell(t.clientX,t.clientY);
-    const pr=tr-dragOffR, pc=tc-dragOffC;
+    const pr=tr-dragAnchorR, pc=tc-dragAnchorC;
     if(pr!==dragPreviewR||pc!==dragPreviewC){dragPreviewR=pr;dragPreviewC=pc;previewAt(pr,pc);}
   },{passive:false});
  
@@ -527,7 +595,7 @@ function bindGridEvents(){
     if(!dragShape)return; e.preventDefault();
     const t=e.changedTouches[0];
     const [tr,tc]=clientToCell(t.clientX,t.clientY);
-    const pr=tr-dragOffR, pc=tc-dragOffC;
+    const pr=tr-dragAnchorR, pc=tc-dragAnchorC;
     endDrag(pr,pc);
   },{passive:false});
  
@@ -555,7 +623,7 @@ function buildGhost(shape){
   const ghost=$('drag-ghost');
   const gg=$('ghost-grid');
   gg.innerHTML='';
-  const cs=Math.max(16,Math.floor(calcCS()*0.7)), fs=Math.max(10,cs-5);
+  const cs=Math.max(16,Math.floor(calcCS()*0.75)), fs=Math.max(10,cs-5);
   const maxC=Math.max(...shape.cells.map(c=>c[0]));
   const maxR=Math.max(...shape.cells.map(c=>c[1]));
   gg.style.cssText=`display:grid;grid-template-columns:repeat(${maxC+1},${cs}px);gap:2px;`;
@@ -569,10 +637,28 @@ function buildGhost(shape){
   }
   ghost.style.display='block';
 }
-function moveDragGhost(cx,cy){
-  const g=$('drag-ghost');
-  g.style.left=cx+'px'; g.style.top=cy+'px';
+function positionGhost(cx,cy){
+  // Ghost appears above the finger so it doesn't obscure drop target
+  // Shift up by ~1.5 cell sizes so finger is near bottom of ghost
+  const cs=calcCS();
+  const ghost=$('drag-ghost');
+  // Offset: center ghost horizontally on anchor col, place anchor row near finger vertically
+  const ghostRect=ghost.getBoundingClientRect();
+  const ghostW=ghost.offsetWidth||80, ghostH=ghost.offsetHeight||80;
+  const maxC=Math.max(...dragShape.cells.map(c=>c[0]));
+  const maxR=Math.max(...dragShape.cells.map(c=>c[1]));
+  const cellSzGhost=Math.max(16,Math.floor(cs*0.75));
+  // x: position so anchor col center aligns with cx
+  const anchorCenterX=(dragAnchorC+0.5)*(cellSzGhost+2);
+  // y: position so anchor row center aligns with cy - offset (finger shows above ghost)
+  const anchorCenterY=(dragAnchorR+0.5)*(cellSzGhost+2);
+  const liftY=cs*1.1; // lift ghost above finger
+  ghost.style.left=(cx - anchorCenterX)+'px';
+  ghost.style.top=(cy - anchorCenterY - liftY)+'px';
+  ghost.style.transform='none';
 }
+// keep old name as alias for any remaining calls
+function moveDragGhost(cx,cy){positionGhost(cx,cy);}
 function hideGhost(){$('drag-ghost').style.display='none';}
  
 // ══════════════════════════════════════════════
@@ -644,10 +730,33 @@ function startDrag(idx, cx, cy){
   sel=dragShape;
   shapes.forEach((s,j)=>{if(s.el)s.el.classList.toggle('selected',j===idx);});
   shapes[idx].el.classList.add('dragging-source');
-  // compute offset: use center of first cell of shape
-  dragOffR=0; dragOffC=0;
+  // Compute which cell of the shape grid is under the finger/cursor
+  // by looking at the rendered shape cells inside the slot
+  dragAnchorR=0; dragAnchorC=0;
+  const slot=shapes[idx].el;
+  const shapeCells=slot.querySelectorAll('.sc:not(.empty)');
+  if(shapeCells.length>0){
+    // find the shape cell closest to touch point
+    let best=null, bestD=Infinity;
+    shapeCells.forEach((sc,n)=>{
+      const rect=sc.getBoundingClientRect();
+      const dx=cx-(rect.left+rect.width/2), dy=cy-(rect.top+rect.height/2);
+      const d=dx*dx+dy*dy;
+      if(d<bestD){bestD=d;best=n;}
+    });
+    if(best!==null){
+      // find which col,row in the shape grid this filled cell maps to
+      const maxC=Math.max(...dragShape.cells.map(c=>c[0]));
+      const maxR=Math.max(...dragShape.cells.map(c=>c[1]));
+      let flatIdx=0;
+      outer: for(let r=0;r<=maxR;r++) for(let c=0;c<=maxC;c++){
+        const has=dragShape.cells.some(([cc,rr])=>cc===c&&rr===r);
+        if(has){ if(flatIdx===best){dragAnchorC=c;dragAnchorR=r;break outer;} flatIdx++; }
+      }
+    }
+  }
   buildGhost(dragShape);
-  moveDragGhost(cx,cy);
+  positionGhost(cx,cy);
   dragPreviewR=-1; dragPreviewC=-1;
 }
  
@@ -665,7 +774,6 @@ function endDrag(row,col){
 }
  
 // Mouse drag for desktop
-let mouseDown=false;
 document.addEventListener('mousedown',e=>{
   const slot=e.target.closest('.shape-slot');
   if(slot){
@@ -682,7 +790,7 @@ document.addEventListener('mousemove',e=>{
     const el=document.elementFromPoint(e.clientX,e.clientY);
     if(el&&el.classList.contains('cell')){
       const tr=+el.dataset.row, tc=+el.dataset.col;
-      const pr=tr-dragOffR, pc=tc-dragOffC;
+      const pr=tr-dragAnchorR, pc=tc-dragAnchorC;
       if(pr!==dragPreviewR||pc!==dragPreviewC){dragPreviewR=pr;dragPreviewC=pc;previewAt(pr,pc);}
     } else clearHL();
   } else if(sel&&!dragShape){
@@ -697,7 +805,7 @@ document.addEventListener('mouseup',e=>{
     mouseDown=false;
     const el=document.elementFromPoint(e.clientX,e.clientY);
     let row=-1,col=-1;
-    if(el&&el.classList.contains('cell')){row=+el.dataset.row-dragOffR;col=+el.dataset.col-dragOffC;}
+    if(el&&el.classList.contains('cell')){row=+el.dataset.row-dragAnchorR;col=+el.dataset.col-dragAnchorC;}
     endDrag(row,col);
   }
   mouseDown=false;
@@ -741,6 +849,7 @@ function doPlace(row,col){
   const blockCount=shape.cells.length; // points per block
  
   if(sp==='bomb'){
+    trackObj('useBomb',1);
     showFloat('💣 BOOM!',row,col);
     for(let r=row-1;r<=row+1;r++) for(let c=col-1;c<=col+1;c++){
       if(r>=0&&r<GS&&c>=0&&c<GS){
@@ -751,7 +860,7 @@ function doPlace(row,col){
     score+=80;
  
   } else if(sp==='lightH'){
-    // horizontal: destroy entire row
+    trackObj('useLH',1);
     showFloat('⚡ RIGA!',row,col);
     for(let c=0;c<GS;c++){
       grid[row][c]=null;
@@ -760,7 +869,7 @@ function doPlace(row,col){
     score+=150; lines++; updMission();
  
   } else if(sp==='lightV'){
-    // vertical: destroy entire column
+    trackObj('useLV',1);
     showFloat('🌩️ COL!',row,col);
     for(let r=0;r<GS;r++){
       grid[r][col]=null;
@@ -769,6 +878,7 @@ function doPlace(row,col){
     score+=150; lines++; updMission();
  
   } else if(sp==='ice'){
+    trackObj('useIce',1);
     getPc(row,col,shape).forEach(([r,c])=>{grid[r][c]=shape.fr;});
     showFloat('❄️ FREEZE!',row,col);
     for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
@@ -783,10 +893,11 @@ function doPlace(row,col){
     score+=30+blockCount; // base + blocks
  
   } else {
-    // Normal: place + score by block count
     const toP=getPc(row,col,shape);
     toP.forEach(([r,c])=>{grid[r][c]=shape.fr;});
-    score+=blockCount; // +1 per blocco piazzato
+    score+=blockCount;
+    trackObj('placed',blockCount);
+    trackObj('bigShape',blockCount);
     showFloat('+'+blockCount,row,col);
     if(SET.anim) toP.forEach(([r,c])=>{
       const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
@@ -803,7 +914,7 @@ function doPlace(row,col){
   setTimeout(()=>{
     checkLines(); renderGrid();
     updScore();
-    if(shapes.every(s=>s.used)) setTimeout(genShapes,320);
+    if(shapes.every(s=>s.used)){trackObj('turns',1);setTimeout(genShapes,320);}
     else checkGO();
   },animD());
 }
@@ -821,11 +932,14 @@ function checkLines(){
   let ls=0;
   toC.forEach(({t,i})=>{
     ls+=100*(combo>1?combo:1); lines++;
+    trackObj('lines',1);
     if(t==='row'){for(let c=0;c<GS;c++){grid[i][c]=null;if(SET.anim){const el=document.querySelector(`.cell[data-row="${i}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}}}
     else{for(let r=0;r<GS;r++){grid[r][i]=null;if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${i}"]`);if(el)el.classList.add('clearing');}}}
   });
  
   score+=ls; updScore(); updMission();
+  if(toC.length>=2) trackObj('multiLine',toC.length);
+  trackObj('combo',combo);
   if(combo>=2){$('combo-lbl').textContent=`🔥 COMBO x${combo}!`;showFloat(`+${ls} x${combo}!`,Math.floor(GS/2),Math.floor(GS/2));}
   else showFloat(`+${ls}`,Math.floor(GS/2),Math.floor(GS/2)+1);
  
@@ -839,6 +953,7 @@ function updScore(){
   $('score').textContent=score.toLocaleString();
   const b=getBest(diff);
   if(score>b){setBest(diff,score);$('best-score').textContent=score.toLocaleString();}
+  trackObj('score',score);
 }
 function updMission(){
   const p=$('mission-prog');
@@ -859,6 +974,180 @@ function showFloat(txt,row,col){
   fs.textContent=txt;
   clearTimeout(fs._t);
   fs._t=setTimeout(()=>{fs.style.opacity='0';fs.style.transform='translateY(-40px)';},90);
+}
+ 
+ 
+// ══════════════════════════════════════════════
+//  OBJECTIVES SYSTEM
+// ══════════════════════════════════════════════
+const ALL_OBJECTIVES = [
+  // id, icon, name, desc, type, target, reward
+  {id:'lines5',    icon:'📏', name:'Prima linea',     desc:'Cancella 5 linee',              type:'lines',   target:5,   reward:300},
+  {id:'lines20',   icon:'📐', name:'In serie',         desc:'Cancella 20 linee',             type:'lines',   target:20,  reward:800},
+  {id:'lines50',   icon:'📊', name:'Demolizione',      desc:'Cancella 50 linee',             type:'lines',   target:50,  reward:2000},
+  {id:'score500',  icon:'⭐', name:'Prime stelle',     desc:'Raggiungi 500 punti',           type:'score',   target:500, reward:200},
+  {id:'score2000', icon:'🌟', name:'In forma',         desc:'Raggiungi 2.000 punti',         type:'score',   target:2000,reward:600},
+  {id:'score5000', icon:'💫', name:'Inarrestabile',    desc:'Raggiungi 5.000 punti',         type:'score',   target:5000,reward:1500},
+  {id:'combo2',    icon:'🔥', name:'Primo combo',      desc:'Fai un combo x2',               type:'combo',   target:2,   reward:250},
+  {id:'combo3',    icon:'💥', name:'Triplice fuoco',   desc:'Fai un combo x3',               type:'combo',   target:3,   reward:500},
+  {id:'combo5',    icon:'🌋', name:'Mega combo',       desc:'Fai un combo x5',               type:'combo',   target:5,   reward:1200},
+  {id:'bomb3',     icon:'💣', name:'Artificiere',      desc:'Usa 3 bombe in una partita',    type:'useBomb', target:3,   reward:400},
+  {id:'lightH3',   icon:'⚡', name:'Fulminante',       desc:'Usa 3 fulmini orizzontali',     type:'useLH',   target:3,   reward:400},
+  {id:'lightV3',   icon:'🌩️', name:'Colpo verticale',  desc:'Usa 3 fulmini verticali',       type:'useLV',   target:3,   reward:400},
+  {id:'ice5',      icon:'❄️', name:'Glaciatore',       desc:'Usa il ghiaccio 5 volte',       type:'useIce',  target:5,   reward:350},
+  {id:'place30',   icon:'🧱', name:'Muratore',         desc:'Piazza 30 blocchi',             type:'placed',  target:30,  reward:300},
+  {id:'place100',  icon:'🏗️', name:'Architetto',       desc:'Piazza 100 blocchi',            type:'placed',  target:100, reward:700},
+  {id:'shape7',    icon:'🔷', name:'Grande piazzata',  desc:'Piazza una forma da 7+ blocchi',type:'bigShape',target:7,   reward:300},
+  {id:'nospec',    icon:'🧘', name:'Purista',          desc:'Fai 10 linee senza speciali',   type:'pureLines',target:10, reward:500},
+  {id:'turn10',    icon:'🔄', name:'In ritmo',         desc:'Sopravvivi 10 turni (set da 3)',type:'turns',   target:10,  reward:250},
+  {id:'turn30',    icon:'⏳', name:'Resistente',       desc:'Sopravvivi 30 turni',           type:'turns',   target:30,  reward:600},
+  {id:'multiline', icon:'🎯', name:'Doppio colpo',     desc:'Cancella 2 linee in un piazzamento', type:'multiLine', target:2, reward:400},
+];
+ 
+// active objectives (max 3 at a time), completed objectives pool
+let activeObjs=[], completedObjIds=new Set(), objStats={};
+ 
+function resetObjStats(){
+  objStats={lines:0,score:0,combo:0,useBomb:0,useLH:0,useLV:0,useIce:0,placed:0,bigShape:0,pureLines:0,turns:0,multiLine:0,specUsed:false};
+}
+ 
+function initObjs(){
+  activeObjs=[]; completedObjIds=new Set(); resetObjStats();
+  pickNewObjs(3);
+  renderObjBarGame();
+}
+ 
+function pickNewObjs(n){
+  const pool=ALL_OBJECTIVES.filter(o=>!completedObjIds.has(o.id)&&!activeObjs.find(a=>a.id===o.id));
+  for(let i=0;i<n&&pool.length>0;i++){
+    const idx=Math.floor(Math.random()*pool.length);
+    activeObjs.push({...pool[idx], progress:0});
+    pool.splice(idx,1);
+  }
+  renderObjBarGame();
+}
+ 
+function trackObj(type, value){
+  // update stats
+  if(type==='lines') objStats.lines+=value;
+  if(type==='score') objStats.score=score;
+  if(type==='combo'&&value>objStats.combo) objStats.combo=value;
+  if(type==='useBomb') objStats.useBomb+=1;
+  if(type==='useLH') objStats.useLH+=1;
+  if(type==='useLV') objStats.useLV+=1;
+  if(type==='useIce') objStats.useIce+=1;
+  if(type==='placed') objStats.placed+=value;
+  if(type==='bigShape'&&value>=objStats.bigShape) objStats.bigShape=value;
+  if(type==='pureLines') objStats.pureLines+=value;
+  if(type==='turns') objStats.turns+=1;
+  if(type==='multiLine'&&value>objStats.multiLine) objStats.multiLine=value;
+ 
+  checkObjCompletion();
+}
+ 
+function getObjProgress(o){
+  const v = objStats[o.type] ?? 0;
+  if(o.type==='score') return score;
+  if(o.type==='combo') return objStats.combo;
+  if(o.type==='bigShape') return objStats.bigShape;
+  if(o.type==='multiLine') return objStats.multiLine;
+  return v;
+}
+ 
+function checkObjCompletion(){
+  let anyDone=false;
+  activeObjs.forEach((o,i)=>{
+    if(o.done) return;
+    const prog=getObjProgress(o);
+    o.progress=Math.min(prog, o.target);
+    if(prog>=o.target){
+      o.done=true; anyDone=true;
+      completedObjIds.add(o.id);
+      score+=o.reward;
+      updScore();
+      showObjToast(o);
+      // replace after delay
+      setTimeout(()=>{
+        activeObjs.splice(i,1);
+        const remaining=ALL_OBJECTIVES.filter(ob=>!completedObjIds.has(ob.id)&&!activeObjs.find(a=>a.id===ob.id));
+        if(remaining.length>0){
+          const pick=remaining[Math.floor(Math.random()*remaining.length)];
+          activeObjs.splice(i,0,{...pick,progress:0});
+        }
+        renderObjBarGame();
+        renderObjScreen();
+      },1800);
+    }
+  });
+  if(anyDone) renderObjBarGame();
+  renderObjScreen();
+}
+ 
+function showObjToast(o){
+  const t=$('obj-toast');
+  t.textContent='🎯 '+o.name+' completato! +'+o.reward.toLocaleString()+' pt';
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2800);
+}
+ 
+function renderObjBarGame(){
+  // mini bar in game showing active objectives
+  const bar=$('obj-bar-game');
+  if(!bar)return;
+  bar.innerHTML='';
+  activeObjs.filter(o=>!o.done).slice(0,2).forEach(o=>{
+    const prog=Math.min(getObjProgress(o),o.target);
+    const pct=Math.round(prog/o.target*100);
+    const d=document.createElement('div');
+    d.style.cssText='flex:1;background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.12);border-radius:9px;padding:5px 8px;display:flex;align-items:center;gap:6px;min-width:0;';
+    d.innerHTML=`<span style="font-size:14px">${o.icon}</span><div style="flex:1;min-width:0;"><div style="font-size:10px;color:rgba(255,255,255,.6);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;">${o.name}</div><div style="height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:3px;"><div style="height:100%;width:${pct}%;background:var(--gold);border-radius:2px;transition:width .3s;"></div></div></div><span style="font-size:10px;color:var(--gold);font-weight:900;white-space:nowrap;">${prog}/${o.target}</span>`;
+    bar.appendChild(d);
+  });
+  // update badge
+  const notif=$('obj-notif');
+  const cnt=$('obj-active-count');
+  const active=activeObjs.filter(o=>!o.done).length;
+  if(cnt) cnt.textContent=active;
+  if(notif) notif.style.display='none';
+}
+ 
+function renderObjScreen(){
+  const list=$('obj-list');
+  if(!list)return;
+  list.innerHTML='';
+  const sub=$('obj-sub');
+ 
+  // active objectives first, then completed
+  const sorted=[...activeObjs, ...ALL_OBJECTIVES.filter(o=>completedObjIds.has(o.id)&&!activeObjs.find(a=>a.id===o.id)).map(o=>({...o,done:true,progress:o.target}))];
+ 
+  if(sorted.length===0){
+    list.innerHTML='<div style="text-align:center;color:rgba(255,255,255,.4);font-size:14px;padding:24px;">Tutti gli obiettivi completati! 🎉</div>';
+    return;
+  }
+ 
+  if(sub) sub.textContent=`Attivi: ${activeObjs.filter(o=>!o.done).length} • Completati: ${completedObjIds.size}/${ALL_OBJECTIVES.length}`;
+ 
+  sorted.forEach(o=>{
+    const prog=o.done?o.target:Math.min(getObjProgress(o),o.target);
+    const pct=Math.round(prog/o.target*100);
+    const card=document.createElement('div');
+    card.className='obj-card'+(o.done?' done':' active');
+    card.innerHTML=`
+      <div class="obj-icon">${o.icon}</div>
+      <div class="obj-info">
+        <div class="obj-name">${o.name}</div>
+        <div class="obj-desc">${o.desc}</div>
+        <div class="obj-bar-wrap" style="margin-top:5px;">
+          <div class="obj-bar" style="width:${pct}%"></div>
+        </div>
+      </div>
+      <div class="obj-right">
+        ${o.done?'<div class="obj-check">✅</div>':''}
+        <div class="obj-reward">+${o.reward.toLocaleString()}</div>
+        <div style="font-size:10px;color:rgba(255,255,255,.4);">${prog}/${o.target}</div>
+      </div>`;
+    list.appendChild(card);
+  });
 }
  
 // ══════════════════════════════════════════════
@@ -895,6 +1184,8 @@ document.querySelectorAll('.diff-card').forEach(card=>{
   });
 });
 $('play-btn').addEventListener('click',startGame);
+$('obj-btn').addEventListener('click',()=>{renderObjScreen();show('obj-screen');});
+$('back-obj').addEventListener('click',()=>show('game-screen'));
 $('settings-btn').addEventListener('click',()=>show('settings-screen'));
 $('back-settings').addEventListener('click',()=>show('menu-screen'));
 $('menu-btn').addEventListener('click',()=>{dragShape=null;hideGhost();updMenuBest();show('menu-screen');});
