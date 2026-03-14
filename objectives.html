@@ -11,7 +11,7 @@
 <title>🎯 Obiettivi — FruitBlast</title>
 <link rel="stylesheet" href="style.css">
 <style>
-.obj-page{gap:14px;padding-top:12px;}
+.obj-page{gap:9px;}
 
 /* Difficulty tabs */
 .diff-tabs{display:flex;gap:6px;width:100%;}
@@ -30,41 +30,41 @@
 .current-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;margin-bottom:8px;text-align:center;}
 .current-card{
   background:var(--glass);border:2px solid rgba(255,215,0,.35);
-  border-radius:20px;padding:20px 18px;width:100%;
+  border-radius:16px;padding:14px 14px;width:100%;
   position:relative;overflow:hidden;
 }
 .current-card::before{
   content:'';position:absolute;top:0;left:0;right:0;height:3px;
   background:linear-gradient(90deg,var(--gold),#ff9f43);
 }
-.cc-head{display:flex;align-items:center;gap:14px;margin-bottom:14px;}
-.cc-icon{font-size:44px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,215,0,.3));}
+.cc-head{display:flex;align-items:center;gap:10px;margin-bottom:8px;}
+.cc-icon{font-size:34px;line-height:1;filter:drop-shadow(0 0 8px rgba(255,215,0,.3));}
 .cc-info{flex:1;}
-.cc-name{font-family:'Fredoka One',cursive;font-size:22px;color:#fff;margin-bottom:3px;}
+.cc-name{font-family:'Fredoka One',cursive;font-size:18px;color:#fff;margin-bottom:2px;}
 .cc-desc{font-size:13px;color:rgba(255,255,255,.6);line-height:1.4;}
-.cc-reward{font-family:'Fredoka One',cursive;font-size:16px;color:var(--gold);margin-top:6px;}
-.cc-progress{margin-top:12px;}
+.cc-reward{font-family:'Fredoka One',cursive;font-size:14px;color:var(--gold);margin-top:3px;}
+.cc-progress{margin-top:8px;}
 .cc-prog-row{display:flex;justify-content:space-between;align-items:center;margin-bottom:5px;}
 .cc-prog-label{font-size:12px;color:rgba(255,255,255,.5);}
 .cc-prog-val{font-size:13px;font-weight:900;color:#fff;}
 .cc-bar-wrap{height:8px;background:rgba(255,255,255,.1);border-radius:4px;overflow:hidden;}
 .cc-bar{height:100%;border-radius:4px;background:linear-gradient(90deg,var(--gold),#ff9f43);transition:width .5s cubic-bezier(.34,1.56,.64,1);}
-.cc-note{font-size:11px;color:rgba(255,215,0,.6);text-align:center;margin-top:10px;font-style:italic;}
+.cc-note{font-size:10px;color:rgba(255,215,0,.6);text-align:center;margin-top:6px;font-style:italic;}
 
 /* All objectives list */
 .all-label{font-size:11px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1.5px;text-align:center;}
 .obj-grid{display:flex;flex-direction:column;gap:7px;width:100%;}
 .obj-row{
-  background:var(--glass);border:1px solid var(--gb);border-radius:14px;
-  padding:11px 14px;display:flex;align-items:center;gap:12px;
+  background:var(--glass);border:1px solid var(--gb);border-radius:12px;
+  padding:9px 12px;display:flex;align-items:center;gap:10px;
 }
 .obj-row.obj-active{border-color:rgba(255,215,0,.3);background:rgba(255,215,0,.05);}
 .obj-row.obj-done{border-color:rgba(46,204,113,.3);background:rgba(46,204,113,.05);}
 .obj-row.obj-locked{opacity:.45;}
-.or-icon{font-size:22px;min-width:30px;text-align:center;}
+.or-icon{font-size:18px;min-width:26px;text-align:center;}
 .or-info{flex:1;min-width:0;}
-.or-name{font-size:13px;font-weight:900;color:#fff;margin-bottom:2px;}
-.or-desc{font-size:11px;color:rgba(255,255,255,.45);line-height:1.3;}
+.or-name{font-size:12px;font-weight:900;color:#fff;margin-bottom:1px;}
+.or-desc{font-size:10px;color:rgba(255,255,255,.45);line-height:1.25;}
 .or-right{display:flex;flex-direction:column;align-items:flex-end;gap:3px;min-width:52px;}
 .or-reward{font-family:'Fredoka One',cursive;font-size:13px;color:var(--gold);}
 .or-status{font-size:18px;}
@@ -76,10 +76,30 @@
 .or-bar{height:100%;border-radius:2px;background:var(--gold);}
 .or-bar.done{background:var(--green);}
 </style>
+
+<script>
+// Registra Service Worker per cache automatica
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => {
+      // Controlla aggiornamenti ogni volta che la pagina si apre
+      reg.update();
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if(newSW.state === 'installed' && navigator.serviceWorker.controller){
+            // Nuovo contenuto disponibile — ricarica silenzioso
+            window.location.reload();
+          }
+        });
+      });
+    });
+}
+</script>
 </head>
 <body>
 <div id="app">
-<div class="page obj-page fade-in">
+<div class="page obj-page fade-in sub-page">
 
   <div class="page-header">
     <button class="back-btn" id="back-btn">← Menu</button>

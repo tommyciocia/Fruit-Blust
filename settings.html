@@ -11,12 +11,32 @@
 <title>⚙️ Impostazioni — FruitBlast</title>
 <link rel="stylesheet" href="style.css">
 <style>
-.set-page{gap:12px;padding-top:12px;}
+.set-page{gap:9px;}
 </style>
+
+<script>
+// Registra Service Worker per cache automatica
+if('serviceWorker' in navigator){
+  navigator.serviceWorker.register('./sw.js')
+    .then(reg => {
+      // Controlla aggiornamenti ogni volta che la pagina si apre
+      reg.update();
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        newSW.addEventListener('statechange', () => {
+          if(newSW.state === 'installed' && navigator.serviceWorker.controller){
+            // Nuovo contenuto disponibile — ricarica silenzioso
+            window.location.reload();
+          }
+        });
+      });
+    });
+}
+</script>
 </head>
 <body>
 <div id="app">
-<div class="page set-page fade-in">
+<div class="page set-page fade-in sub-page">
 
   <div class="page-header">
     <button class="back-btn" id="back-btn">← Menu</button>

@@ -14,11 +14,11 @@
 <style>
 /* ── Menu layout ── */
 #menu{
-  /* space-evenly distributes gaps between all items including top/bottom */
   justify-content:space-evenly;
   min-height:100%;
-  padding-top:calc(var(--sat) + 4px);
-  padding-bottom:calc(var(--sab) + 6px);
+  /* override .page default padding */
+  padding-top:calc(var(--sat) + 6px) !important;
+  padding-bottom:calc(var(--sab) + 8px) !important;
   gap:0;
 }
 
