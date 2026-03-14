@@ -1,0 +1,121 @@
+<svg width="1024" height="1024" viewBox="0 0 680 680" xmlns="http://www.w3.org/2000/svg">
+<defs>
+  <linearGradient id="bg1" x1="0" y1="0" x2="1" y2="1">
+    <stop offset="0%" stop-color="#3a0a6e"/>
+    <stop offset="50%" stop-color="#1a0a55"/>
+    <stop offset="100%" stop-color="#0a1540"/>
+  </linearGradient>
+  <linearGradient id="boardBg" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#1a0830"/>
+    <stop offset="100%" stop-color="#050c20"/>
+  </linearGradient>
+  <linearGradient id="goldBorder" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#ffe566"/>
+    <stop offset="100%" stop-color="#b87800"/>
+  </linearGradient>
+  <linearGradient id="fruitTxt" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#ffe94d"/>
+    <stop offset="50%" stop-color="#ff9900"/>
+    <stop offset="100%" stop-color="#cc6600"/>
+  </linearGradient>
+  <linearGradient id="blastTxt" x1="0" y1="0" x2="0" y2="1">
+    <stop offset="0%" stop-color="#aaeeff"/>
+    <stop offset="50%" stop-color="#44aaff"/>
+    <stop offset="100%" stop-color="#1155cc"/>
+  </linearGradient>
+  <linearGradient id="rb" x1="0" y1="0" x2="1" y2="0">
+    <stop offset="0%" stop-color="#ff4444"/>
+    <stop offset="20%" stop-color="#ff9900"/>
+    <stop offset="40%" stop-color="#ffee00"/>
+    <stop offset="60%" stop-color="#44ee44"/>
+    <stop offset="80%" stop-color="#4499ff"/>
+    <stop offset="100%" stop-color="#aa44ff"/>
+  </linearGradient>
+  <linearGradient id="bR" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ff6666"/><stop offset="100%" stop-color="#cc1111"/></linearGradient>
+  <linearGradient id="bO" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffbb44"/><stop offset="100%" stop-color="#cc7700"/></linearGradient>
+  <linearGradient id="bG" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#66ee66"/><stop offset="100%" stop-color="#118822"/></linearGradient>
+  <linearGradient id="bP" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#cc66ff"/><stop offset="100%" stop-color="#7700cc"/></linearGradient>
+  <linearGradient id="bB" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#44aaff"/><stop offset="100%" stop-color="#0044cc"/></linearGradient>
+  <linearGradient id="bY" x1="0" y1="0" x2="0" y2="1"><stop offset="0%" stop-color="#ffee55"/><stop offset="100%" stop-color="#cc9900"/></linearGradient>
+</defs>
+
+<rect x="20" y="20" width="640" height="640" rx="130" fill="url(#bg1)"/>
+
+<circle cx="90" cy="120" r="4" fill="#ffe566" opacity="0.7"/>
+<circle cx="590" cy="100" r="5" fill="#ffe566" opacity="0.8"/>
+<circle cx="80" cy="480" r="3" fill="#aaeeff" opacity="0.6"/>
+<circle cx="600" cy="500" r="4" fill="#ff9900" opacity="0.7"/>
+<circle cx="150" cy="580" r="3" fill="#cc66ff" opacity="0.6"/>
+<circle cx="530" cy="570" r="3" fill="#66ee66" opacity="0.6"/>
+<circle cx="340" cy="55" r="4" fill="#ffe566" opacity="0.5"/>
+
+<path d="M 120 175 Q 340 60 560 175" fill="none" stroke="url(#rb)" stroke-width="8" opacity="0.85" stroke-linecap="round"/>
+<path d="M 135 185 Q 340 78 545 185" fill="none" stroke="url(#rb)" stroke-width="5" opacity="0.4" stroke-linecap="round"/>
+
+<text x="340" y="175" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="118" fill="none" stroke="#7a3800" stroke-width="10" stroke-linejoin="round" letter-spacing="-3">Fruit</text>
+<text x="340" y="175" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="118" fill="url(#fruitTxt)" letter-spacing="-3">Fruit</text>
+
+<text x="340" y="265" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="100" fill="none" stroke="#002266" stroke-width="10" stroke-linejoin="round" letter-spacing="4">Blast</text>
+<text x="340" y="265" text-anchor="middle" font-family="Arial Black,Impact,sans-serif" font-weight="900" font-size="100" fill="url(#blastTxt)" letter-spacing="4">Blast</text>
+
+<rect x="90" y="295" width="500" height="350" rx="22" fill="none" stroke="#ffe566" stroke-width="6" opacity="0.35"/>
+<rect x="95" y="300" width="490" height="340" rx="20" fill="url(#boardBg)" stroke="url(#goldBorder)" stroke-width="5"/>
+
+<polygon points="95,370 112,355 129,370 112,385" fill="#ffe566"/>
+<polygon points="585,370 602,355 619,370 602,385" fill="#ffe566"/>
+<polygon points="95,490 112,475 129,490 112,505" fill="#44aaff"/>
+<polygon points="585,490 602,475 619,490 602,505" fill="#44aaff"/>
+
+<rect x="115" y="318" width="66" height="66" rx="10" fill="url(#bR)"/>
+<text x="148" y="360" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="189" y="318" width="66" height="66" rx="10" fill="url(#bO)"/>
+<text x="222" y="360" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="263" y="318" width="66" height="66" rx="10" fill="url(#bG)"/>
+<text x="296" y="360" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="411" y="318" width="66" height="66" rx="10" fill="url(#bP)"/>
+<text x="444" y="360" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="485" y="318" width="66" height="66" rx="10" fill="url(#bB)"/>
+<text x="518" y="360" text-anchor="middle" font-size="28" font-family="serif">★</text>
+
+<rect x="115" y="392" width="66" height="66" rx="10" fill="url(#bY)"/>
+<text x="148" y="434" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="189" y="392" width="66" height="66" rx="10" fill="url(#bP)"/>
+<text x="222" y="434" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="263" y="392" width="66" height="66" rx="10" fill="#ff4444" stroke="#ffee00" stroke-width="3"/>
+<text x="296" y="434" text-anchor="middle" font-size="28" font-family="serif" fill="#ffee00">★</text>
+<rect x="337" y="392" width="66" height="66" rx="10" fill="#ff4444" stroke="#ffee00" stroke-width="3"/>
+<text x="370" y="434" text-anchor="middle" font-size="28" font-family="serif" fill="#ffee00">★</text>
+<rect x="411" y="392" width="66" height="66" rx="10" fill="url(#bB)"/>
+<text x="444" y="434" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="485" y="392" width="66" height="66" rx="10" fill="url(#bG)"/>
+<text x="518" y="434" text-anchor="middle" font-size="28" font-family="serif">★</text>
+
+<rect x="115" y="466" width="66" height="66" rx="10" fill="url(#bB)"/>
+<text x="148" y="508" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="337" y="466" width="66" height="66" rx="10" fill="url(#bP)"/>
+<text x="370" y="508" text-anchor="middle" font-size="28" font-family="serif">★</text>
+<rect x="485" y="466" width="66" height="66" rx="10" fill="url(#bR)"/>
+<text x="518" y="508" text-anchor="middle" font-size="28" font-family="serif">★</text>
+
+<rect x="113" y="545" width="58" height="58" rx="10" fill="url(#bP)" stroke="#cc88ff" stroke-width="2" opacity="0.95"/>
+<rect x="113" y="487" width="58" height="58" rx="10" fill="url(#bP)" stroke="#cc88ff" stroke-width="2" opacity="0.95"/>
+<rect x="179" y="545" width="58" height="58" rx="10" fill="url(#bR)" stroke="#ff8888" stroke-width="2" opacity="0.95"/>
+<ellipse cx="165" cy="616" rx="70" ry="10" fill="#cc44ff" opacity="0.3"/>
+
+<circle cx="340" cy="430" r="18" fill="#ffe566" opacity="0.12"/>
+<line x1="340" y1="412" x2="340" y2="448" stroke="#ffe566" stroke-width="2.5" opacity="0.5"/>
+<line x1="322" y1="430" x2="358" y2="430" stroke="#ffe566" stroke-width="2.5" opacity="0.5"/>
+<line x1="327" y1="417" x2="353" y2="443" stroke="#ffe566" stroke-width="1.5" opacity="0.35"/>
+<line x1="353" y1="417" x2="327" y2="443" stroke="#ffe566" stroke-width="1.5" opacity="0.35"/>
+
+<circle cx="88" cy="310" r="22" fill="#cc8800" stroke="#ffe566" stroke-width="3"/>
+<circle cx="88" cy="310" r="14" fill="#ffcc00"/>
+<text x="88" y="317" text-anchor="middle" font-size="14" font-weight="900" fill="#996600" font-family="Arial,sans-serif">$</text>
+<circle cx="592" cy="290" r="19" fill="#cc8800" stroke="#ffe566" stroke-width="3"/>
+<circle cx="592" cy="290" r="12" fill="#ffcc00"/>
+<text x="592" y="296" text-anchor="middle" font-size="12" font-weight="900" fill="#996600" font-family="Arial,sans-serif">$</text>
+<circle cx="76" cy="240" r="15" fill="#cc8800" stroke="#ffe566" stroke-width="2"/>
+<circle cx="76" cy="240" r="9" fill="#ffcc00"/>
+<circle cx="610" cy="230" r="16" fill="#cc8800" stroke="#ffe566" stroke-width="2"/>
+<circle cx="610" cy="230" r="10" fill="#ffcc00"/>
+</svg>
