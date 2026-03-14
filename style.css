@@ -2,7 +2,7 @@
    FruitBlast — Shared Styles
 ═══════════════════════════════════════════ */
 @import url('https://fonts.googleapis.com/css2?family=Fredoka+One&family=Nunito:wght@400;700;900&display=swap');
-
+ 
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 :root{
   --green:#2ecc71;--yellow:#f1c40f;--red:#e74c3c;--gold:#FFD700;
@@ -35,7 +35,7 @@ body::before{
   display:flex;flex-direction:column;align-items:center;
   padding:calc(var(--sat)+8px) 12px calc(var(--sab)+12px);
 }
-
+ 
 /* ── Shared UI ── */
 .page{display:flex;flex-direction:column;align-items:center;width:100%;max-width:480px;flex-shrink:0;}
 .logo-wrap{text-align:center;margin-bottom:4px;}
@@ -66,7 +66,9 @@ body::before{
 .spd-btn{background:rgba(255,255,255,.09);border:1px solid rgba(255,255,255,.16);
   color:rgba(255,255,255,.5);border-radius:10px;padding:7px 11px;cursor:pointer;
   font-size:12px;font-weight:700;font-family:'Nunito',sans-serif;min-height:38px;}
-.spd-btn.active{background:rgba(255,215,0,.16);border-color:var(--gold);color:var(--gold);}
+.spd-btn[data-speed="slow"].active{background:rgba(46,204,113,.18);border-color:#2ecc71;color:#2ecc71;}
+.spd-btn[data-speed="normal"].active{background:rgba(255,215,0,.16);border-color:var(--gold);color:var(--gold);}
+.spd-btn[data-speed="fast"].active{background:rgba(231,76,60,.18);border-color:#e74c3c;color:#e74c3c;}
 .danger-card{background:rgba(231,76,60,.08)!important;border-color:rgba(231,76,60,.2)!important;}
 .btn-danger{background:rgba(231,76,60,.13);border:1px solid rgba(231,76,60,.3);
   color:#e74c3c;border-radius:10px;padding:9px 15px;cursor:pointer;
@@ -95,3 +97,4 @@ body::before{
 .how-icon{font-size:18px;min-width:26px;text-align:center;line-height:1.2;}
 @keyframes fadeIn{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
 .fade-in{animation:fadeIn .25s ease;}
+ 

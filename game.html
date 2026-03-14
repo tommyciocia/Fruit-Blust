@@ -37,20 +37,9 @@
   display:flex;align-items:center;border:1px solid;white-space:nowrap;}
 .stat-row{display:flex;gap:12px;font-size:12px;color:rgba(255,255,255,.52);justify-content:center;}
 .stat-row b{color:rgba(255,255,255,.88);font-weight:900;}
-
-/* Current objective mini bar */
-#obj-mini{
-  width:100%;background:rgba(255,215,0,.07);border:1px solid rgba(255,215,0,.2);
-  border-radius:10px;padding:7px 12px;display:flex;align-items:center;gap:8px;cursor:pointer;
-}
-#obj-mini:active{background:rgba(255,215,0,.12);}
-.om-icon{font-size:18px;}
-.om-info{flex:1;min-width:0;}
-.om-name{font-size:11px;font-weight:900;color:#fff;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.om-bar-wrap{height:4px;background:rgba(255,255,255,.1);border-radius:2px;margin-top:3px;overflow:hidden;}
-.om-bar{height:100%;border-radius:2px;background:var(--gold);transition:width .4s;}
-.om-val{font-size:10px;color:var(--gold);font-weight:900;white-space:nowrap;}
-
+ 
+ 
+ 
 /* Grid */
 #grid-wrap{background:rgba(255,255,255,.04);border-radius:15px;
   padding:6px;border:2px solid rgba(255,255,255,.1);
@@ -72,7 +61,7 @@
 .cell.frozen::after{content:'❄';position:absolute;font-size:8px;bottom:1px;right:1px;opacity:.5;line-height:1;}
 .cell.freeze-anim{animation:freeze .44s cubic-bezier(.34,1.56,.64,1);}
 @keyframes freeze{0%{background:rgba(180,240,255,.5);transform:scale(1.1)}100%{background:rgba(130,210,255,.15);transform:scale(1)}}
-
+ 
 /* Shapes */
 #shapes-area{display:flex;gap:7px;justify-content:center;width:100%;}
 .shape-slot{touch-action:none;background:rgba(255,255,255,.07);border-radius:13px;
@@ -91,7 +80,7 @@
 .sc.empty{background:transparent!important;}
 .sp-badge{position:absolute;top:4px;right:4px;font-size:10px;
   background:rgba(255,85,35,.8);color:#fff;border-radius:6px;padding:1px 5px;font-weight:900;}
-
+ 
 /* Drag ghost */
 #drag-ghost{
   position:fixed;pointer-events:none;z-index:1000;display:none;opacity:.9;
@@ -100,7 +89,7 @@
   box-shadow:0 0 24px rgba(255,215,0,.35),0 4px 16px rgba(0,0,0,.5);
   will-change:left,top;
 }
-
+ 
 /* Game over */
 #go-screen{gap:14px;padding-top:22px;text-align:center;}
 .go-emoji{font-size:clamp(54px,15vw,70px);animation:gbounce .5s cubic-bezier(.34,1.56,.64,1);}
@@ -125,19 +114,9 @@
   font-size:14px;font-weight:700;cursor:pointer;
   font-family:'Nunito',sans-serif;width:100%;max-width:300px;text-align:center;}
 #go-menu-btn:active{background:rgba(255,255,255,.14);}
-
-/* Objective completed toast */
-#obj-toast{
-  position:fixed;bottom:calc(var(--sab)+80px);left:50%;
-  transform:translateX(-50%) translateY(16px);
-  background:linear-gradient(135deg,rgba(46,204,113,.95),rgba(30,160,80,.95));
-  border-radius:14px;padding:10px 18px;z-index:500;
-  font-size:13px;font-weight:900;color:#fff;text-align:center;
-  box-shadow:0 4px 20px rgba(0,0,0,.4);opacity:0;
-  transition:opacity .3s,transform .3s;pointer-events:none;white-space:nowrap;
-}
-#obj-toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
-
+ 
+ 
+ 
 /* Floating score */
 #fscore{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:20px;
   color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.7);z-index:999;opacity:0;
@@ -146,13 +125,12 @@
 </head>
 <body>
 <div id="app">
-
+ 
 <!-- GAME -->
 <div id="game-screen" class="page fade-in">
   <div class="g-header">
     <div class="g-left">
       <button class="g-icon-btn" id="menu-btn">🏠</button>
-      <button class="g-icon-btn" id="obj-btn" title="Obiettivo attuale">🎯</button>
     </div>
     <div class="g-logo">🍉 FruitBlast</div>
     <div id="score-area">
@@ -173,19 +151,11 @@
     <span>❄️ <b id="stat-ice">2</b></span>
     <span>🏆 <b id="best-score">0</b></span>
   </div>
-  <!-- Mini objective bar -->
-  <div id="obj-mini">
-    <div class="om-icon" id="om-icon">🎯</div>
-    <div class="om-info">
-      <div class="om-name" id="om-name">Caricamento...</div>
-      <div class="om-bar-wrap"><div class="om-bar" id="om-bar" style="width:0%"></div></div>
-    </div>
-    <div class="om-val" id="om-val">0/0</div>
-  </div>
+ 
   <div id="grid-wrap"><div id="grid"></div></div>
   <div id="shapes-area"></div>
 </div>
-
+ 
 <!-- GAME OVER -->
 <div id="go-screen" class="page" style="display:none;">
   <div class="go-emoji">🍉💥</div>
@@ -200,12 +170,11 @@
   <button id="play-again-btn">🔄 Rigioca</button>
   <button id="go-menu-btn">🏠 Menu principale</button>
 </div>
-
+ 
 </div><!-- #app -->
 <div id="drag-ghost"><div class="sgrid" id="ghost-grid"></div></div>
-<div id="obj-toast"></div>
 <div id="fscore"></div>
-
+ 
 <script src="data.js"></script>
 <script>
 // ════════════════════════════════════════
@@ -215,22 +184,22 @@ const $=id=>document.getElementById(id);
 const diff = sessionStorage.getItem('fb_diff')||'easy';
 const cfg  = DCFG[diff];
 let SET    = getSettings();
-
+ 
 // ── game state ──
 let GS, grid, score, shapes, sel, combo, comboGrace, lines, mission, frozen;
 let dragShape=null, dragAnchorR=0, dragAnchorC=0, dragPreviewR=-1, dragPreviewC=-1;
 let mouseDown=false;
-
+ 
 // ── per-run stats (tracked for objectives) ──
 let runStats={};
 function resetRunStats(){
   runStats={lines:0,score:0,combo:0,useBomb:0,useLH:0,useLV:0,useIce:0,
             placed:0,bigShape:0,multiLine:0,turns:0,pureLines:0};
 }
-
+ 
 // ── objective state ──
 let objState, activeObj;
-
+ 
 // ════════════════════════════════════════
 //  OBJECTIVE HELPERS
 // ════════════════════════════════════════
@@ -240,7 +209,7 @@ function loadObjState(){
   const idx  = Math.min(objState.currentIdx||0, objs.length-1);
   activeObj  = objs[idx];
 }
-
+ 
 function getObjProgress(){
   if(!activeObj) return 0;
   const t = activeObj.type;
@@ -250,19 +219,9 @@ function getObjProgress(){
   if(t==='multiLine') return runStats.multiLine;
   return runStats[t]||0;
 }
-
-function updObjMini(){
-  if(!activeObj){ $('obj-mini').style.display='none'; return; }
-  const prog = Math.min(getObjProgress(), activeObj.target);
-  const pct  = Math.round(prog/activeObj.target*100);
-  const done = (objState.completed||[]).includes(activeObj.id);
-  $('om-icon').textContent = activeObj.icon;
-  $('om-name').textContent = done ? '✅ '+activeObj.name+' — completato!' : activeObj.name;
-  $('om-bar').style.width  = pct+'%';
-  $('om-bar').style.background = done?'var(--green)':'';
-  $('om-val').textContent  = prog+'/'+activeObj.target;
-}
-
+ 
+function updObjMini(){ /* mini bar removed — objectives visible from menu only */ }
+ 
 function trackStat(type, val){
   if(type==='lines')    { runStats.lines    +=val; }
   if(type==='useBomb')  { runStats.useBomb  +=1;   }
@@ -277,7 +236,7 @@ function trackStat(type, val){
   // score is always from global score variable
   checkObjProgress();
 }
-
+ 
 function checkObjProgress(){
   if(!activeObj) return;
   if((objState.completed||[]).includes(activeObj.id)) return;
@@ -285,22 +244,18 @@ function checkObjProgress(){
   updObjMini();
   if(prog >= activeObj.target) completeObjective();
 }
-
+ 
 function completeObjective(){
   if(!activeObj) return;
   if(!objState.completed) objState.completed=[];
   if(objState.completed.includes(activeObj.id)) return;
-
+ 
   objState.completed.push(activeObj.id);
   score += activeObj.reward;
   updScore();
-
-  // show toast
-  const t=$('obj-toast');
-  t.textContent='🎯 '+activeObj.name+' — +'+activeObj.reward.toLocaleString()+' pt!';
-  t.classList.add('show');
-  setTimeout(()=>t.classList.remove('show'), 2800);
-
+ 
+  // objective completed (toast removed)
+ 
   // advance to next objective
   const objs = OBJECTIVES[diff];
   const nextIdx = objState.currentIdx+1;
@@ -311,12 +266,12 @@ function completeObjective(){
     activeObj = null; // all done
   }
   saveObjState(diff, objState);
-
+ 
   // persist best stats for objectives page
   saveRunStats();
   updObjMini();
 }
-
+ 
 function saveRunStats(){
   // merge with existing best stats (keep highest values)
   let stored={};
@@ -329,7 +284,7 @@ function saveRunStats(){
   });
   localStorage.setItem('fb_stats_'+diff, JSON.stringify(merged));
 }
-
+ 
 // ════════════════════════════════════════
 //  GAME INIT
 // ════════════════════════════════════════
@@ -339,28 +294,28 @@ function startGame(){
   frozen={}; score=0; combo=0; comboGrace=0; lines=0; mission=cfg.ms; sel=null; dragShape=null;
   resetRunStats();
   loadObjState();
-
+ 
   $('stat-bomb').textContent=2; $('stat-lh').textContent=1;
   $('stat-lv').textContent=1;   $('stat-ice').textContent=2;
-
+ 
   const p=$('diff-pill');
   p.textContent=cfg.lbl;
   p.style.cssText=`font-size:11px;font-weight:900;border-radius:10px;padding:0 11px;display:flex;align-items:center;border:1px solid ${cfg.col};color:${cfg.col};background:${cfg.col}22;`;
-
+ 
   updScore();
   $('best-score').textContent=getBest(diff).toLocaleString();
   updMission();
   updObjMini();
   renderGrid();
   genShapes();
-
+ 
   $('game-screen').style.display='flex';
   $('go-screen').style.display='none';
 }
-
+ 
 function animD(){ return SET.anim?(SET.speed==='fast'?200:SET.speed==='slow'?680:420):50; }
 function getFruit(){ return SET.fruit?FRUITS[Math.floor(Math.random()*FRUITS.length)]:'■'; }
-
+ 
 // ════════════════════════════════════════
 //  GRID
 // ════════════════════════════════════════
@@ -368,7 +323,7 @@ function calcCS(){
   const vw=Math.min(window.innerWidth,480);
   return Math.max(28, Math.floor((vw-24-12-3*(GS-1))/GS));
 }
-
+ 
 function renderGrid(){
   const g=$('grid'); g.innerHTML='';
   const cs=calcCS(), fs=Math.floor(cs*0.52);
@@ -384,7 +339,7 @@ function renderGrid(){
   }
   bindGrid();
 }
-
+ 
 function bindGrid(){
   const old=$('grid'), ng=old.cloneNode(true);
   old.parentNode.replaceChild(ng,old);
@@ -408,7 +363,7 @@ function bindGrid(){
     endDrag(tr-dragAnchorR, tc-dragAnchorC);
   },{passive:false});
 }
-
+ 
 function clientToCell(cx,cy){
   const g=document.getElementById('grid');
   let best=null, bestD=Infinity;
@@ -420,7 +375,7 @@ function clientToCell(cx,cy){
   });
   return best?[+best.dataset.row,+best.dataset.col]:[-1,-1];
 }
-
+ 
 // ════════════════════════════════════════
 //  GHOST
 // ════════════════════════════════════════
@@ -451,7 +406,7 @@ function positionGhost(cx,cy){
   ghost.style.transform='none';
 }
 function hideGhost(){ $('drag-ghost').style.display='none'; }
-
+ 
 // ════════════════════════════════════════
 //  SHAPES
 // ════════════════════════════════════════
@@ -460,7 +415,7 @@ function thaw(){
   for(const k in frozen){frozen[k]--;if(frozen[k]<=0)del.push(k);}
   del.forEach(k=>delete frozen[k]);
 }
-
+ 
 function genShapes(){
   thaw();
   const area=$('shapes-area'); area.innerHTML=''; shapes=[];
@@ -496,13 +451,13 @@ function genShapes(){
   });
   renderGrid();
 }
-
+ 
 function pickShape(i){
   if(shapes[i].used)return;
   shapes.forEach((s,j)=>{ if(s.el) s.el.classList.toggle('selected',j===i); });
   sel=shapes[i];
 }
-
+ 
 // ════════════════════════════════════════
 //  DRAG
 // ════════════════════════════════════════
@@ -536,7 +491,7 @@ function startDrag(idx,cx,cy){
   positionGhost(cx,cy);
   dragPreviewR=-1; dragPreviewC=-1;
 }
-
+ 
 function endDrag(row,col){
   hideGhost();
   if(dragShape){
@@ -546,7 +501,7 @@ function endDrag(row,col){
     dragShape=null;
   }
 }
-
+ 
 document.addEventListener('mousedown',e=>{
   const slot=e.target.closest('.shape-slot');
   if(slot){
@@ -583,13 +538,13 @@ document.addEventListener('click',e=>{
   const cell=e.target.closest('.cell');
   if(cell&&sel&&!sel.used) doPlace(+cell.dataset.row,+cell.dataset.col);
 });
-
+ 
 // ════════════════════════════════════════
 //  PLACEMENT
 // ════════════════════════════════════════
 function getPc(row,col,s){ return s.cells.map(([c,r])=>[row+r,col+c]); }
 function canPlace(row,col,s){ return getPc(row,col,s).every(([r,c])=>r>=0&&r<GS&&c>=0&&c<GS&&!grid[r][c]&&!frozen[r+','+c]); }
-
+ 
 function previewAt(row,col){
   clearHL(); if(!sel)return;
   const cells=getPc(row,col,sel);
@@ -599,13 +554,13 @@ function previewAt(row,col){
   });
 }
 function clearHL(){ document.querySelectorAll('.cell.highlight,.cell.invalid').forEach(e=>e.classList.remove('highlight','invalid')); }
-
+ 
 function doPlace(row,col){
   const shape=dragShape||sel;
   if(!shape||!canPlace(row,col,shape))return;
   const sp=shape.sp;
   const blockCount=shape.cells.length;
-
+ 
   if(sp==='bomb'){
     trackStat('useBomb',1);
     showFloat('💣 BOOM!',row,col);
@@ -658,19 +613,19 @@ function doPlace(row,col){
       if(el){el.classList.add('just-placed');setTimeout(()=>el.classList.remove('just-placed'),260);}
     });
   }
-
+ 
   shape.used=true;
   if(shape.el){shape.el.classList.add('used');shape.el.classList.remove('selected','dragging-source');}
   sel=null; dragShape=null; clearHL(); hideGhost();
   Object.keys(frozen).forEach(k=>{frozen[k]--;if(frozen[k]<=0)delete frozen[k];});
-
+ 
   setTimeout(()=>{
     checkLines(); renderGrid(); updScore();
     if(shapes.every(s=>s.used)){ trackStat('turns',1); setTimeout(genShapes,320); }
     else checkGO();
   }, animD());
 }
-
+ 
 // ════════════════════════════════════════
 //  COMBO + GRACE
 // ════════════════════════════════════════
@@ -695,7 +650,7 @@ function updGraceUI(){
     }
   }
 }
-
+ 
 // ════════════════════════════════════════
 //  LINES
 // ════════════════════════════════════════
@@ -703,7 +658,7 @@ function checkLines(){
   const toC=[];
   for(let r=0;r<GS;r++) if(grid[r].every(c=>c!==null)) toC.push({t:'row',i:r});
   for(let c=0;c<GS;c++) if(grid.every(r=>r[c]!==null)) toC.push({t:'col',i:c});
-
+ 
   if(!toC.length){
     if(combo>0){
       if(comboGrace>0){ comboGrace--; updGraceUI(); if(comboGrace===0) setTimeout(()=>{combo=0;comboGrace=0;updGraceUI();},300); }
@@ -711,7 +666,7 @@ function checkLines(){
     }
     return;
   }
-
+ 
   combo++; comboGrace=0;
   let ls=0;
   toC.forEach(({t,i})=>{
@@ -735,7 +690,7 @@ function checkLines(){
   updGraceUI();
   setTimeout(()=>{document.querySelectorAll('.cell.clearing').forEach(e=>e.classList.remove('clearing'));renderGrid();},animD());
 }
-
+ 
 // ════════════════════════════════════════
 //  SCORE / MISSION
 // ════════════════════════════════════════
@@ -767,7 +722,7 @@ function showFloat(txt,row,col){
   clearTimeout(fs._t);
   fs._t=setTimeout(()=>{fs.style.opacity='0';fs.style.transform='translateY(-40px)';},90);
 }
-
+ 
 // ════════════════════════════════════════
 //  GAME OVER
 // ════════════════════════════════════════
@@ -789,19 +744,18 @@ function triggerGO(){
   $('go-screen').style.display='flex';
   $('go-screen').classList.add('fade-in');
 }
-
+ 
 // ════════════════════════════════════════
 //  EVENTS
 // ════════════════════════════════════════
 window.addEventListener('resize',()=>renderGrid());
 $('menu-btn').addEventListener('click',()=>{ dragShape=null;hideGhost();location.href='index.html'; });
-$('obj-btn').addEventListener('click',()=>{ sessionStorage.setItem('fb_diff',diff);location.href='objectives.html'; });
-$('obj-mini').addEventListener('click',()=>{ sessionStorage.setItem('fb_diff',diff);location.href='objectives.html'; });
 $('play-again-btn').addEventListener('click',startGame);
 $('go-menu-btn').addEventListener('click',()=>{ location.href='index.html'; });
-
+ 
 // Boot
 startGame();
 </script>
 </body>
 </html>
+ 
