@@ -94,7 +94,7 @@
 }
  
 /* Game over */
-#go-screen{gap:14px;padding-top:22px;text-align:center;}
+#go-screen{gap:14px;padding-top:calc(var(--sat) + 8px);padding-bottom:calc(var(--sab) + 12px);text-align:center;justify-content:center;min-height:100vh;min-height:100dvh;}
 .go-emoji{font-size:clamp(54px,15vw,70px);animation:gbounce .5s cubic-bezier(.34,1.56,.64,1);}
 @keyframes gbounce{from{transform:scale(0) rotate(-10deg)}to{transform:scale(1) rotate(0)}}
 .go-title{font-family:'Fredoka One',cursive;font-size:clamp(36px,11vw,48px);color:var(--gold);}
@@ -120,12 +120,13 @@
  
  
  
-/* Floating score */
+.cell.line-ready{background:rgba(255,230,80,.18);border-color:rgba(255,220,60,.5);transition:background .08s,border-color .08s;}
+.cell.line-complete{background:rgba(100,255,160,.28);border-color:rgba(80,255,140,.7);box-shadow:inset 0 0 6px rgba(80,255,140,.25);transition:background .08s,border-color .08s;z-index:1;}
 #fscore{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:20px;
   color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.7);z-index:999;opacity:0;
   transition:opacity .65s,transform .65s;}
 </style>
-
+ 
 <script>
 // Registra Service Worker per cache automatica
 if('serviceWorker' in navigator){
@@ -388,47 +389,6 @@ function bindGrid(){
   });
 }
  
-function clientToCell(cx,cy){
-  const g=document.getElementById('grid');
-  let best=null, bestD=Infinity;
-  g.querySelectorAll('.cell').forEach(cell=>{
-    const rect=cell.getBoundingClientRect();
-    const dx=cx-(rect.left+rect.width/2), dy=cy-(rect.top+rect.height/2);
-    const d=dx*dx+dy*dy;
-    if(d<bestD){bestD=d;best=cell;}
-  });
-  return best?[+best.dataset.row,+best.dataset.col]:[-1,-1];
-}
- 
-// ════════════════════════════════════════
-//  GHOST
-// ════════════════════════════════════════
-function buildGhost(shape){
-  const gg=$('ghost-grid'); gg.innerHTML='';
-  const cs=Math.max(16,Math.floor(calcCS()*.75)), fs=Math.max(10,cs-5);
-  const maxC=Math.max(...shape.cells.map(c=>c[0]));
-  const maxR=Math.max(...shape.cells.map(c=>c[1]));
-  gg.style.cssText=`display:grid;grid-template-columns:repeat(${maxC+1},${cs}px);gap:2px;`;
-  for(let r=0;r<=maxR;r++) for(let c=0;c<=maxC;c++){
-    const sc=document.createElement('div');
-    const has=shape.cells.some(([cc,rr])=>cc===c&&rr===r);
-    sc.className='sc'+(has?'':' empty');
-    sc.style.cssText=`width:${cs}px;height:${cs}px;font-size:${fs}px;`;
-    if(has){sc.textContent=shape.sp?SPEC[shape.sp]:shape.fr;sc.style.background='rgba(255,255,255,.18)';sc.style.borderRadius='4px';}
-    gg.appendChild(sc);
-  }
-  $('drag-ghost').style.display='block';
-}
-function positionGhost(cx,cy){
-  const cs=calcCS();
-  const cellSzG=Math.max(16,Math.floor(cs*.75));
-  const anchorCX=(dragAnchorC+0.5)*(cellSzG+2);
-  const anchorCY=(dragAnchorR+0.5)*(cellSzG+2);
-  const ghost=$('drag-ghost');
-  ghost.style.left=(cx-anchorCX)+'px';
-  ghost.style.top=(cy-anchorCY-cs*1.1)+'px';
-  ghost.style.transform='none';
-}
 function hideGhost(){ $('drag-ghost').style.display='none'; }
  
 // ════════════════════════════════════════
@@ -490,47 +450,118 @@ function pickShape(i){
 }
  
 // ════════════════════════════════════════
-//  DRAG
+//  DRAG — Block Blast style
+//  Il ghost appare sopra il dito, centrato sulla forma.
+//  La griglia snappa alla cella griglia più vicina al
+//  centro geometrico del ghost (non all'ancora del dito).
 // ════════════════════════════════════════
-function startDrag(idx,cx,cy){
-  if(shapes[idx].used)return;
-  dragShape=shapes[idx]; sel=dragShape;
-  shapes.forEach((s,j)=>{ if(s.el) s.el.classList.toggle('selected',j===idx); });
-  shapes[idx].el.classList.add('dragging-source');
-  dragAnchorR=0; dragAnchorC=0;
-  const shapeCells=shapes[idx].el.querySelectorAll('.sc:not(.empty)');
-  if(shapeCells.length>0){
-    let best=null,bestD=Infinity;
-    shapeCells.forEach((sc,n)=>{
-      const rect=sc.getBoundingClientRect();
-      const dx=cx-(rect.left+rect.width/2),dy=cy-(rect.top+rect.height/2);
-      const d=dx*dx+dy*dy;
-      if(d<bestD){bestD=d;best=n;}
-    });
-    if(best!==null){
-      const maxC=Math.max(...dragShape.cells.map(c=>c[0]));
-      const maxR=Math.max(...dragShape.cells.map(c=>c[1]));
-      let flat=0;
-      outer:for(let r=0;r<=maxR;r++) for(let c=0;c<=maxC;c++){
-        if(dragShape.cells.some(([cc,rr])=>cc===c&&rr===r)){
-          if(flat===best){dragAnchorC=c;dragAnchorR=r;break outer;} flat++;
-        }
-      }
-    }
-  }
-  buildGhost(dragShape);
-  positionGhost(cx,cy);
-  dragPreviewR=-1; dragPreviewC=-1;
+ 
+// Offset verticale fisso: il ghost galleggia sopra il dito
+const LIFT_PX = ()=> calcCS() * 1.6;
+ 
+// Centro geometrico della shape (in celle, float)
+function shapeCenterCR(shape){
+  const cs = shape.cells;
+  const cx = cs.reduce((s,[c])=>s+c,0)/cs.length;
+  const cr = cs.reduce((s,[,r])=>s+r,0)/cs.length;
+  return [cr, cx]; // [centerRow, centerCol]
 }
  
-function endDrag(row,col){
+function startDrag(idx, cx, cy){
+  if(shapes[idx].used) return;
+  dragShape = shapes[idx]; sel = dragShape;
+  shapes.forEach((s,j)=>{ if(s.el) s.el.classList.toggle('selected', j===idx); });
+  shapes[idx].el.classList.add('dragging-source');
+  // Ancora = centro geometrico della forma
+  const [cr,cc] = shapeCenterCR(dragShape);
+  dragAnchorR = cr; dragAnchorC = cc;
+  buildGhost(dragShape);
+  positionGhost(cx, cy);
+  dragPreviewR = -1; dragPreviewC = -1;
+  // Mostra subito preview nella posizione iniziale
+  updateDragPreview(cx, cy);
+}
+ 
+// Posiziona ghost centrato sulla forma, sollevato sopra il dito
+function positionGhost(cx, cy){
+  const cs = calcCS();
+  const cellSzG = Math.max(16, Math.floor(cs * 0.85));
+  const gap = 2;
+  const maxC = Math.max(...dragShape.cells.map(c=>c[0]));
+  const maxR = Math.max(...dragShape.cells.map(c=>c[1]));
+  // Dimensione totale del ghost
+  const ghostW = (maxC+1)*(cellSzG+gap) - gap;
+  const ghostH = (maxR+1)*(cellSzG+gap) - gap;
+  // Centro geometrico della forma in pixel nel ghost
+  const [cr,cc] = shapeCenterCR(dragShape);
+  const centerXinGhost = cc*(cellSzG+gap) + cellSzG/2;
+  const centerYinGhost = cr*(cellSzG+gap) + cellSzG/2;
+  const ghost = $('drag-ghost');
+  // Posiziona così: centro forma del ghost = posizione dito, poi alza
+  ghost.style.left = (cx - centerXinGhost - 8) + 'px'; // -8 per padding ghost
+  ghost.style.top  = (cy - centerYinGhost - 8 - LIFT_PX()) + 'px';
+  ghost.style.transform = 'none';
+}
+ 
+// Calcola quale cella top-left corrisponde al dito
+// Usa il centro geometrico del ghost per trovare la cella griglia
+function fingerToGridRC(cx, cy){
+  const cs = calcCS();
+  const liftY = cy - LIFT_PX();
+  // Punto del centro geometrico del ghost
+  const [cr,cc] = shapeCenterCR(dragShape);
+  const ghostCX = cx;
+  const ghostCY = liftY;
+  // Trova la cella griglia sotto il centro del ghost
+  const gridEl = document.getElementById('grid');
+  const gridRect = gridEl.getBoundingClientRect();
+  const relX = ghostCX - gridRect.left;
+  const relY = ghostCY - gridRect.top;
+  const cellStep = cs + 3; // cellSize + gap
+  const centerGridC = Math.round((relX - cs/2) / cellStep);
+  const centerGridR = Math.round((relY - cs/2) / cellStep);
+  // Top-left della forma = centro griglia - ancora centro
+  const topLeftR = Math.round(centerGridR - cr);
+  const topLeftC = Math.round(centerGridC - cc);
+  return [topLeftR, topLeftC];
+}
+ 
+function updateDragPreview(cx, cy){
+  if(!dragShape) return;
+  const [row, col] = fingerToGridRC(cx, cy);
+  if(row !== dragPreviewR || col !== dragPreviewC){
+    dragPreviewR = row; dragPreviewC = col;
+    previewAt(row, col);
+  }
+}
+ 
+function endDrag(cx, cy){
   hideGhost();
   if(dragShape){
-    if(row>=0&&col>=0&&canPlace(row,col,dragShape)) doPlace(row,col);
+    const [row, col] = fingerToGridRC(cx, cy);
+    if(canPlace(row, col, dragShape)) doPlace(row, col);
     else clearHL();
-    if(dragShape&&dragShape.el) dragShape.el.classList.remove('dragging-source');
-    dragShape=null;
+    if(dragShape && dragShape.el) dragShape.el.classList.remove('dragging-source');
+    dragShape = null;
   }
+}
+ 
+// ── GHOST builder aggiornato con celle più grandi ──
+function buildGhost(shape){
+  const gg=$('ghost-grid'); gg.innerHTML='';
+  const cs=Math.max(18, Math.floor(calcCS()*0.85)), fs=Math.max(11,cs-5);
+  const maxC=Math.max(...shape.cells.map(c=>c[0]));
+  const maxR=Math.max(...shape.cells.map(c=>c[1]));
+  gg.style.cssText=`display:grid;grid-template-columns:repeat(${maxC+1},${cs}px);gap:2px;`;
+  for(let r=0;r<=maxR;r++) for(let c=0;c<=maxC;c++){
+    const sc=document.createElement('div');
+    const has=shape.cells.some(([cc,rr])=>cc===c&&rr===r);
+    sc.className='sc'+(has?'':' empty');
+    sc.style.cssText=`width:${cs}px;height:${cs}px;font-size:${fs}px;`;
+    if(has){sc.textContent=shape.sp?SPEC[shape.sp]:shape.fr;sc.style.background='rgba(255,255,255,.22)';sc.style.borderRadius='5px';}
+    gg.appendChild(sc);
+  }
+  $('drag-ghost').style.display='block';
 }
  
 // ── MOUSE (desktop) ──
@@ -544,40 +575,20 @@ document.addEventListener('mousedown',e=>{
 document.addEventListener('mousemove',e=>{
   if(mouseDown&&dragShape){
     positionGhost(e.clientX,e.clientY);
-    const el=document.elementFromPoint(e.clientX,e.clientY);
-    if(el&&el.classList.contains('cell')){
-      const pr=+el.dataset.row-dragAnchorR, pc=+el.dataset.col-dragAnchorC;
-      if(pr!==dragPreviewR||pc!==dragPreviewC){dragPreviewR=pr;dragPreviewC=pc;previewAt(pr,pc);}
-    } else clearHL();
-  } else if(sel&&!dragShape){
-    const el=document.elementFromPoint(e.clientX,e.clientY);
-    if(el&&el.classList.contains('cell')) previewAt(+el.dataset.row,+el.dataset.col);
-    else clearHL();
+    updateDragPreview(e.clientX,e.clientY);
   }
 });
 document.addEventListener('mouseup',e=>{
   if(mouseDown&&dragShape){
     mouseDown=false;
-    const el=document.elementFromPoint(e.clientX,e.clientY);
-    let row=-1,col=-1;
-    if(el&&el.classList.contains('cell')){row=+el.dataset.row-dragAnchorR;col=+el.dataset.col-dragAnchorC;}
-    endDrag(row,col);
+    endDrag(e.clientX,e.clientY);
   }
   mouseDown=false;
 });
-document.addEventListener('click',e=>{
-  if(dragShape)return;
-  const cell=e.target.closest('.cell');
-  if(cell&&sel&&!sel.used) doPlace(+cell.dataset.row,+cell.dataset.col);
-});
-
-// ── TOUCH GLOBALE — un unico listener per tutto il drag su mobile ──
-// Così il touch non si perde mai quando il dito esce dallo shape-slot
-
+ 
+// ── TOUCH GLOBALE ──
 document.addEventListener('touchmove',e=>{
   const t=e.touches[0];
-
-  // Avvia drag se c'è uno shape pending e il dito si è mosso abbastanza
   if(!dragShape && touchPendingIdx>=0){
     const dx=t.clientX-touchPendingX, dy=t.clientY-touchPendingY;
     if(Math.sqrt(dx*dx+dy*dy)>DRAG_THRESHOLD){
@@ -585,46 +596,20 @@ document.addEventListener('touchmove',e=>{
       touchPendingIdx=-1;
     }
   }
-
-  if(!dragShape) return;
-  e.preventDefault(); // blocca scroll solo mentre si trascina
-
-  // Aggiorna ghost in tempo reale
-  positionGhost(t.clientX,t.clientY);
-
-  // Trova la cella sotto il dito
-  const el=document.elementFromPoint(t.clientX,t.clientY);
-  if(el&&el.classList.contains('cell')){
-    const pr=+el.dataset.row-dragAnchorR, pc=+el.dataset.col-dragAnchorC;
-    if(pr!==dragPreviewR||pc!==dragPreviewC){
-      dragPreviewR=pr; dragPreviewC=pc;
-      previewAt(pr,pc);
-    }
-  } else {
-    clearHL();
-  }
-},{passive:false});
-
-document.addEventListener('touchend',e=>{
-  touchPendingIdx=-1; // annulla pending se era solo un tap
-
   if(!dragShape) return;
   e.preventDefault();
-
-  const t=e.changedTouches[0];
-  const el=document.elementFromPoint(t.clientX,t.clientY);
-  let row=-1,col=-1;
-  if(el&&el.classList.contains('cell')){
-    row=+el.dataset.row-dragAnchorR;
-    col=+el.dataset.col-dragAnchorC;
-  } else {
-    // Cerca la cella più vicina al dito
-    const [tr,tc]=clientToCell(t.clientX,t.clientY);
-    row=tr-dragAnchorR; col=tc-dragAnchorC;
-  }
-  endDrag(row,col);
+  positionGhost(t.clientX, t.clientY);
+  updateDragPreview(t.clientX, t.clientY);
 },{passive:false});
-
+ 
+document.addEventListener('touchend',e=>{
+  touchPendingIdx=-1;
+  if(!dragShape) return;
+  e.preventDefault();
+  const t=e.changedTouches[0];
+  endDrag(t.clientX, t.clientY);
+},{passive:false});
+ 
 document.addEventListener('touchcancel',()=>{
   touchPendingIdx=-1;
   if(dragShape){
@@ -644,11 +629,68 @@ function previewAt(row,col){
   clearHL(); if(!sel)return;
   const cells=getPc(row,col,sel);
   const ok=cells.every(([r,c])=>r>=0&&r<GS&&c>=0&&c<GS&&!grid[r][c]&&!frozen[r+','+c]);
+  // Highlight the shape cells
   cells.forEach(([r,c])=>{
     if(r>=0&&r<GS&&c>=0&&c<GS){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add(ok?'highlight':'invalid');}
   });
+  if(!ok) return;
+  // Simulate placing and find which rows/cols would complete
+  const placedSet=new Set(cells.map(([r,c])=>r+','+c));
+  const completedRows=new Set(), completedCols=new Set();
+  // Check rows
+  for(let r=0;r<GS;r++){
+    let full=true;
+    for(let c=0;c<GS;c++){
+      if(!grid[r][c]&&!placedSet.has(r+','+c)){full=false;break;}
+    }
+    if(full) completedRows.add(r);
+  }
+  // Check cols
+  for(let c=0;c<GS;c++){
+    let full=true;
+    for(let r=0;r<GS;r++){
+      if(!grid[r][c]&&!placedSet.has(r+','+c)){full=false;break;}
+    }
+    if(full) completedCols.add(c);
+  }
+  // Check near-complete (GS-1 filled) rows/cols for yellow hint
+  for(let r=0;r<GS;r++){
+    if(completedRows.has(r)) continue;
+    let filled=0;
+    for(let c=0;c<GS;c++) if(grid[r][c]||placedSet.has(r+','+c)) filled++;
+    if(filled>=GS-1){
+      for(let c=0;c<GS;c++){
+        const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+        if(el&&!el.classList.contains('highlight')) el.classList.add('line-ready');
+      }
+    }
+  }
+  for(let c=0;c<GS;c++){
+    if(completedCols.has(c)) continue;
+    let filled=0;
+    for(let r=0;r<GS;r++) if(grid[r][c]||placedSet.has(r+','+c)) filled++;
+    if(filled>=GS-1){
+      for(let r=0;r<GS;r++){
+        const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+        if(el&&!el.classList.contains('highlight')) el.classList.add('line-ready');
+      }
+    }
+  }
+  // Highlight complete rows/cols in green
+  completedRows.forEach(r=>{
+    for(let c=0;c<GS;c++){
+      const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      if(el){el.classList.remove('highlight','line-ready');el.classList.add('line-complete');}
+    }
+  });
+  completedCols.forEach(c=>{
+    for(let r=0;r<GS;r++){
+      const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+      if(el){el.classList.remove('highlight','line-ready');el.classList.add('line-complete');}
+    }
+  });
 }
-function clearHL(){ document.querySelectorAll('.cell.highlight,.cell.invalid').forEach(e=>e.classList.remove('highlight','invalid')); }
+function clearHL(){ document.querySelectorAll('.cell.highlight,.cell.invalid,.cell.line-ready,.cell.line-complete').forEach(e=>e.classList.remove('highlight','invalid','line-ready','line-complete')); }
  
 function doPlace(row,col){
   const shape=dragShape||sel;
