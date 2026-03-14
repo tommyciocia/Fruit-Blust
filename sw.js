@@ -1,8 +1,11 @@
 // ═══════════════════════════════════════════
 //  FruitBlast — Service Worker
-//  Cambia CACHE_VERSION ogni deploy per forzare aggiornamento
+//  Aggiorna il timestamp qui sotto ad ogni commit
+//  oppure usa il GitHub Action per farlo in automatico.
+//  Basta che questo numero sia diverso dall'ultima volta.
 // ═══════════════════════════════════════════
-const CACHE_VERSION = 'fruitblast-v14';
+const CACHE_VERSION = 'fruitblast-20250314-1';
+
 const ASSETS = [
   './',
   './index.html',
@@ -12,42 +15,46 @@ const ASSETS = [
   './shop.html',
   './style.css',
   './data.js',
-  './fruitblast_icon.svg',
+  './foto_sfondo.png',
 ];
-// Install: metti in cache tutti i file
+
+// Install: scarica tutti i file freschi dal server
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_VERSION)
       .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting()) // attiva subito senza aspettare il reload
+      .then(() => self.skipWaiting()) // non aspettare, attivati subito
   );
 });
-// Activate: elimina tutte le vecchie cache
+
+// Activate: cancella TUTTE le vecchie cache, poi prendi controllo
 self.addEventListener('activate', e => {
   e.waitUntil(
-    caches.keys().then(keys =>
-      Promise.all(
-        keys
-          .filter(k => k !== CACHE_VERSION)
-          .map(k => caches.delete(k))
-      )
-    ).then(() => self.clients.claim()) // prendi controllo di tutte le tab aperte
+    caches.keys()
+      .then(keys => Promise.all(
+        keys.filter(k => k !== CACHE_VERSION).map(k => caches.delete(k))
+      ))
+      .then(() => self.clients.claim())
+      .then(() => self.clients.matchAll({ type: 'window' }))
+      .then(clients => {
+        // Dice a tutte le pagine aperte: ricaricati ora
+        clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
+      })
   );
 });
-// Fetch: network first, poi cache come fallback
-// Così vedi sempre i file aggiornati se sei online
+
+// Fetch: prova sempre la rete prima, cache solo se offline
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
   e.respondWith(
     fetch(e.request)
       .then(response => {
-        // Aggiorna la cache con la risposta fresca
         if (response && response.status === 200) {
           const clone = response.clone();
           caches.open(CACHE_VERSION).then(cache => cache.put(e.request, clone));
         }
         return response;
       })
-      .catch(() => caches.match(e.request)) // offline: usa cache
+      .catch(() => caches.match(e.request))
   );
 });

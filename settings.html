@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/svg+xml" href="fruitblast_icon.svg">
-<link rel="apple-touch-icon" href="fruitblast_icon.svg">
+<link rel="icon" type="image/png" href="foto_sfondo.png">
+<link rel="apple-touch-icon" href="foto_sfondo.png">
 <meta name="apple-mobile-web-app-title" content="FruitBlast">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -26,22 +26,22 @@
 </style>
  
 <script>
-// Registra Service Worker per cache automatica
 if('serviceWorker' in navigator){
-  navigator.serviceWorker.register('./sw.js')
-    .then(reg => {
-      // Controlla aggiornamenti ogni volta che la pagina si apre
-      reg.update();
-      reg.addEventListener('updatefound', () => {
-        const newSW = reg.installing;
-        newSW.addEventListener('statechange', () => {
-          if(newSW.state === 'installed' && navigator.serviceWorker.controller){
-            // Nuovo contenuto disponibile — ricarica silenzioso
-            window.location.reload();
-          }
-        });
+  navigator.serviceWorker.register('./sw.js').then(reg => {
+    reg.update();
+    reg.addEventListener('updatefound', () => {
+      const sw = reg.installing;
+      sw.addEventListener('statechange', () => {
+        if(sw.state === 'installed' && navigator.serviceWorker.controller){
+          window.location.reload();
+        }
       });
     });
+  });
+  // Ascolta il messaggio dal SW: nuovo deploy rilevato -> ricarica subito
+  navigator.serviceWorker.addEventListener('message', e => {
+    if(e.data && e.data.type === 'SW_UPDATED') window.location.reload();
+  });
 }
 </script>
 </head>

@@ -1,0 +1,23 @@
+name: Aggiorna versione Service Worker
+
+on:
+  push:
+    branches: [ main, master ]
+
+jobs:
+  update-sw:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Aggiorna CACHE_VERSION con timestamp attuale
+        run: |
+          TIMESTAMP=$(date +"%Y%m%d-%H%M")
+          sed -i "s/const CACHE_VERSION = 'fruitblast-[^']*'/const CACHE_VERSION = 'fruitblast-$TIMESTAMP'/" sw.js
+          echo "Nuova versione: fruitblast-$TIMESTAMP"
+
+      - name: Commit e push se ci sono modifiche
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git diff --quiet || (git add sw.js && git commit -m "🔄 Auto-update SW cache version [${{ github.sha }}]" && git push)
