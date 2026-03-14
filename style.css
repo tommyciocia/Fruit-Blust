@@ -33,7 +33,7 @@ body::before{
   position:relative;z-index:1;width:100%;height:100%;
   overflow-y:auto;overflow-x:hidden;-webkit-overflow-scrolling:touch;
   display:flex;flex-direction:column;align-items:center;
-  padding:calc(var(--sat)+8px) 12px calc(var(--sab)+12px);
+  padding:calc(var(--sat)+4px) 10px calc(var(--sab)+8px);
 }
  
 /* ── Shared UI ── */
