@@ -122,6 +122,7 @@
  
 .cell.line-ready{background:rgba(255,230,80,.18);border-color:rgba(255,220,60,.5);transition:background .08s,border-color .08s;}
 .cell.line-complete{background:rgba(100,255,160,.28);border-color:rgba(80,255,140,.7);box-shadow:inset 0 0 6px rgba(80,255,140,.25);transition:background .08s,border-color .08s;z-index:1;}
+.cell.bomb-zone{background:rgba(255,80,80,.2);border-color:rgba(255,100,80,.55);transition:background .08s;}
 #fscore{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:20px;
   color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.7);z-index:999;opacity:0;
   transition:opacity .65s,transform .65s;}
@@ -403,11 +404,20 @@ function thaw(){
 function genShapes(){
   thaw();
   const area=$('shapes-area'); area.innerHTML=''; shapes=[];
-  const specKeys=Object.keys(SPEC);
   for(let i=0;i<3;i++){
     const base=cfg.sh[Math.floor(Math.random()*cfg.sh.length)];
     const fr=getFruit();
-    const sp=SET.special&&Math.random()<cfg.sc?specKeys[Math.floor(Math.random()*specKeys.length)]:null;
+    let sp=null;
+    if(SET.special && Math.random()<cfg.sc){
+      // Assign special based on shape orientation
+      const spanC=Math.max(...base.c.map(c=>c[0]))+1; // width in cols
+      const spanR=Math.max(...base.c.map(c=>c[1]))+1; // height in rows
+      const r=Math.random();
+      if(spanR>spanC && r<0.5) sp='lightV';       // tall shape → vertical lightning
+      else if(spanC>spanR && r<0.5) sp='lightH';  // wide shape → horizontal lightning
+      else if(r<0.25) sp='bomb';
+      else sp='ice';
+    }
     shapes.push({cells:[...base.c],fr,sp,used:false,el:null});
   }
   const slotW=Math.floor((Math.min(window.innerWidth,480)-24-7*2)/3);
@@ -627,9 +637,46 @@ function canPlace(row,col,s){ return getPc(row,col,s).every(([r,c])=>r>=0&&r<GS&
  
 function previewAt(row,col){
   clearHL(); if(!sel)return;
+  const sp=sel.sp;
   const cells=getPc(row,col,sel);
   const ok=cells.every(([r,c])=>r>=0&&r<GS&&c>=0&&c<GS&&!grid[r][c]&&!frozen[r+','+c]);
-  // Highlight the shape cells
+ 
+  // For specials: show effect zone preview
+  if(sp==='bomb' && ok){
+    // Show 5x5 blast zone
+    const cx=row, cc2=col;
+    cells.forEach(([r,c])=>{ if(r>=0&&r<GS&&c>=0&&c<GS){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add('highlight');} });
+    for(let r=cx-2;r<=cx+2;r++) for(let c=cc2-2;c<=cc2+2;c++){
+      if(r>=0&&r<GS&&c>=0&&c<GS){
+        const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+        if(el&&!el.classList.contains('highlight')) el.classList.add('bomb-zone');
+      }
+    }
+    return;
+  }
+  if(sp==='lightH' && ok){
+    // Show all rows the shape touches
+    const touchedRows=new Set(cells.map(([r])=>r));
+    touchedRows.forEach(r=>{ for(let c=0;c<GS;c++){ const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`); if(el)el.classList.add('line-complete'); } });
+    return;
+  }
+  if(sp==='lightV' && ok){
+    // Show all cols the shape touches
+    const touchedCols=new Set(cells.map(([,c])=>c));
+    touchedCols.forEach(c=>{ for(let r=0;r<GS;r++){ const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`); if(el)el.classList.add('line-complete'); } });
+    return;
+  }
+  if(sp==='ice' && ok){
+    cells.forEach(([r,c])=>{ const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add('highlight'); });
+    // Show freeze zone
+    const touchedRows=new Set(cells.map(([r])=>r));
+    const touchedCols=new Set(cells.map(([,c])=>c));
+    touchedRows.forEach(r=>{ for(let c=0;c<GS;c++){ const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el&&!el.classList.contains('highlight'))el.classList.add('line-ready'); } });
+    touchedCols.forEach(c=>{ for(let r=0;r<GS;r++){ const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el&&!el.classList.contains('highlight'))el.classList.add('line-ready'); } });
+    return;
+  }
+ 
+  // Normal shape highlight
   cells.forEach(([r,c])=>{
     if(r>=0&&r<GS&&c>=0&&c<GS){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add(ok?'highlight':'invalid');}
   });
@@ -637,115 +684,120 @@ function previewAt(row,col){
   // Simulate placing and find which rows/cols would complete
   const placedSet=new Set(cells.map(([r,c])=>r+','+c));
   const completedRows=new Set(), completedCols=new Set();
-  // Check rows
   for(let r=0;r<GS;r++){
     let full=true;
-    for(let c=0;c<GS;c++){
-      if(!grid[r][c]&&!placedSet.has(r+','+c)){full=false;break;}
-    }
+    for(let c=0;c<GS;c++){ if(!grid[r][c]&&!placedSet.has(r+','+c)){full=false;break;} }
     if(full) completedRows.add(r);
   }
-  // Check cols
   for(let c=0;c<GS;c++){
     let full=true;
-    for(let r=0;r<GS;r++){
-      if(!grid[r][c]&&!placedSet.has(r+','+c)){full=false;break;}
-    }
+    for(let r=0;r<GS;r++){ if(!grid[r][c]&&!placedSet.has(r+','+c)){full=false;break;} }
     if(full) completedCols.add(c);
   }
-  // Check near-complete (GS-1 filled) rows/cols for yellow hint
+  // Near-complete yellow hint
   for(let r=0;r<GS;r++){
     if(completedRows.has(r)) continue;
     let filled=0;
     for(let c=0;c<GS;c++) if(grid[r][c]||placedSet.has(r+','+c)) filled++;
-    if(filled>=GS-1){
-      for(let c=0;c<GS;c++){
-        const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-        if(el&&!el.classList.contains('highlight')) el.classList.add('line-ready');
-      }
-    }
+    if(filled>=GS-1){ for(let c=0;c<GS;c++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el&&!el.classList.contains('highlight'))el.classList.add('line-ready');} }
   }
   for(let c=0;c<GS;c++){
     if(completedCols.has(c)) continue;
     let filled=0;
     for(let r=0;r<GS;r++) if(grid[r][c]||placedSet.has(r+','+c)) filled++;
-    if(filled>=GS-1){
-      for(let r=0;r<GS;r++){
-        const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-        if(el&&!el.classList.contains('highlight')) el.classList.add('line-ready');
-      }
-    }
+    if(filled>=GS-1){ for(let r=0;r<GS;r++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el&&!el.classList.contains('highlight'))el.classList.add('line-ready');} }
   }
-  // Highlight complete rows/cols in green
-  completedRows.forEach(r=>{
-    for(let c=0;c<GS;c++){
-      const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-      if(el){el.classList.remove('highlight','line-ready');el.classList.add('line-complete');}
-    }
-  });
-  completedCols.forEach(c=>{
-    for(let r=0;r<GS;r++){
-      const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
-      if(el){el.classList.remove('highlight','line-ready');el.classList.add('line-complete');}
-    }
-  });
+  completedRows.forEach(r=>{ for(let c=0;c<GS;c++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el){el.classList.remove('highlight','line-ready');el.classList.add('line-complete');}} });
+  completedCols.forEach(c=>{ for(let r=0;r<GS;r++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el){el.classList.remove('highlight','line-ready');el.classList.add('line-complete');}} });
 }
-function clearHL(){ document.querySelectorAll('.cell.highlight,.cell.invalid,.cell.line-ready,.cell.line-complete').forEach(e=>e.classList.remove('highlight','invalid','line-ready','line-complete')); }
+function clearHL(){ document.querySelectorAll('.cell.highlight,.cell.invalid,.cell.line-ready,.cell.line-complete,.cell.bomb-zone').forEach(e=>e.classList.remove('highlight','invalid','line-ready','line-complete','bomb-zone')); }
  
 function doPlace(row,col){
   const shape=dragShape||sel;
   if(!shape||!canPlace(row,col,shape))return;
   const sp=shape.sp;
   const blockCount=shape.cells.length;
+  const placedCells=getPc(row,col,shape);
  
   if(sp==='bomb'){
+    // 5x5 blast centered on placement point, clears everything
     trackStat('useBomb',1);
     showFloat('💣 BOOM!',row,col);
-    for(let r=row-1;r<=row+1;r++) for(let c=col-1;c<=col+1;c++){
+    let cleared=0;
+    for(let r=row-2;r<=row+2;r++) for(let c=col-2;c<=col+2;c++){
       if(r>=0&&r<GS&&c>=0&&c<GS){
+        if(grid[r][c]) cleared++;
         grid[r][c]=null;
+        delete frozen[r+','+c];
         if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}
       }
     }
-    score+=80;
+    score += 150 + cleared*8;
+ 
   } else if(sp==='lightH'){
+    // Clear ALL rows touched by the shape
     trackStat('useLH',1);
-    showFloat('⚡ RIGA!',row,col);
-    for(let c=0;c<GS;c++){
-      grid[row][c]=null;
-      if(SET.anim){const el=document.querySelector(`.cell[data-row="${row}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}
-    }
-    score+=150; lines++; updMission(); trackStat('lines',1);
-  } else if(sp==='lightV'){
-    trackStat('useLV',1);
-    showFloat('🌩️ COL!',row,col);
-    for(let r=0;r<GS;r++){
-      grid[r][col]=null;
-      if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${col}"]`);if(el)el.classList.add('clearing');}
-    }
-    score+=150; lines++; updMission(); trackStat('lines',1);
-  } else if(sp==='ice'){
-    trackStat('useIce',1);
-    getPc(row,col,shape).forEach(([r,c])=>{grid[r][c]=shape.fr;});
-    showFloat('❄️ FREEZE!',row,col);
-    for(let dr=-1;dr<=1;dr++) for(let dc=-1;dc<=1;dc++){
-      if(dr===0&&dc===0)continue;
-      const nr=row+dr, nc=col+dc;
-      if(nr>=0&&nr<GS&&nc>=0&&nc<GS&&!grid[nr][nc]){
-        frozen[nr+','+nc]=1;
-        const el=document.querySelector(`.cell[data-row="${nr}"][data-col="${nc}"]`);
-        if(el){el.classList.add('frozen');if(SET.anim){el.classList.add('freeze-anim');setTimeout(()=>el.classList.remove('freeze-anim'),500);}}
+    const touchedRows=[...new Set(placedCells.map(([r])=>r))];
+    showFloat(`⚡ x${touchedRows.length} RIGHE!`,row,col);
+    touchedRows.forEach(r=>{
+      for(let c=0;c<GS;c++){
+        grid[r][c]=null;
+        if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}
       }
-    }
-    score+=30+blockCount;
+      lines++; updMission(); trackStat('lines',1);
+    });
+    score += 120*touchedRows.length;
+ 
+  } else if(sp==='lightV'){
+    // Clear ALL columns touched by the shape
+    trackStat('useLV',1);
+    const touchedCols=[...new Set(placedCells.map(([,c])=>c))];
+    showFloat(`🌩️ x${touchedCols.length} COL!`,row,col);
+    touchedCols.forEach(c=>{
+      for(let r=0;r<GS;r++){
+        grid[r][c]=null;
+        if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}
+      }
+      lines++; updMission(); trackStat('lines',1);
+    });
+    score += 120*touchedCols.length;
+ 
+  } else if(sp==='ice'){
+    // Place the blocks, then freeze the entire row AND column for each placed cell
+    trackStat('useIce',1);
+    placedCells.forEach(([r,c])=>{grid[r][c]=shape.fr;});
+    showFloat('❄️ FREEZE!',row,col);
+    const touchedRows=new Set(placedCells.map(([r])=>r));
+    const touchedCols=new Set(placedCells.map(([,c])=>c));
+    // Freeze cross pattern (row + col of shape)
+    touchedRows.forEach(r=>{
+      for(let c=0;c<GS;c++){
+        if(!grid[r][c]&&!placedCells.some(([pr,pc])=>pr===r&&pc===c)){
+          frozen[r+','+c]=2;
+          const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+          if(el){el.classList.add('frozen');if(SET.anim){el.classList.add('freeze-anim');setTimeout(()=>el.classList.remove('freeze-anim'),500);}}
+        }
+      }
+    });
+    touchedCols.forEach(c=>{
+      for(let r=0;r<GS;r++){
+        if(!grid[r][c]&&!placedCells.some(([pr,pc])=>pr===r&&pc===c)){
+          frozen[r+','+c]=2;
+          const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
+          if(el){el.classList.add('frozen');if(SET.anim){el.classList.add('freeze-anim');setTimeout(()=>el.classList.remove('freeze-anim'),500);}}
+        }
+      }
+    });
+    score += 20 + blockCount*3;
     trackStat('placed',blockCount); trackStat('bigShape',blockCount);
+ 
   } else {
-    const toP=getPc(row,col,shape);
-    toP.forEach(([r,c])=>{grid[r][c]=shape.fr;});
+    // Normal placement
+    placedCells.forEach(([r,c])=>{grid[r][c]=shape.fr;});
     score+=blockCount;
     trackStat('placed',blockCount); trackStat('bigShape',blockCount);
     showFloat('+'+blockCount,row,col);
-    if(SET.anim) toP.forEach(([r,c])=>{
+    if(SET.anim) placedCells.forEach(([r,c])=>{
       const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);
       if(el){el.classList.add('just-placed');setTimeout(()=>el.classList.remove('just-placed'),260);}
     });
@@ -754,6 +806,7 @@ function doPlace(row,col){
   shape.used=true;
   if(shape.el){shape.el.classList.add('used');shape.el.classList.remove('selected','dragging-source');}
   sel=null; dragShape=null; clearHL(); hideGhost();
+  // Decrement frozen timers
   Object.keys(frozen).forEach(k=>{frozen[k]--;if(frozen[k]<=0)delete frozen[k];});
  
   setTimeout(()=>{
