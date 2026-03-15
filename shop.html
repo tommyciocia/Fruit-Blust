@@ -35,68 +35,93 @@
 .cb-val{ font-family:'Fredoka One',cursive; font-size:clamp(20px,6vw,26px); color:#d4a8ff; line-height:1; }
 .cb-sub{ font-size:10px; color:rgba(200,150,255,.45); margin-top:2px; }
 
-.section-label{
-  font-size:10px; color:rgba(255,255,255,.38);
-  text-transform:uppercase; letter-spacing:2px;
-  text-align:center; width:100%;
+/* Tabs */
+.shop-tabs{ display:flex; gap:6px; width:100%; }
+.shop-tab{
+  flex:1; padding:9px 0; border-radius:12px; cursor:pointer;
+  text-align:center; font-size:13px; font-weight:700;
+  font-family:'Nunito',sans-serif;
+  background:var(--glass); border:1px solid var(--gb);
+  color:rgba(255,255,255,.55); transition:all .18s;
 }
+.shop-tab.active{ background:rgba(255,215,0,.14); border-color:var(--gold); color:var(--gold); }
 
-.sets-grid{ display:flex; flex-direction:column; gap:9px; width:100%; }
+/* Section panels */
+.shop-panel{ display:none; flex-direction:column; gap:9px; width:100%; }
+.shop-panel.visible{ display:flex; }
 
-.set-card{
+/* Cards */
+.item-card{
   width:100%; border-radius:16px; padding:12px 14px;
   background:var(--glass); border:2px solid var(--gb);
   position:relative; overflow:hidden;
   transition:border-color .2s, box-shadow .2s;
 }
-.set-card.owned{ border-color:rgba(46,204,113,.25); }
-.set-card.active-set{
+.item-card.owned-card{ border-color:rgba(46,204,113,.25); }
+.item-card.active-card{
   border-color:var(--gold);
   box-shadow:0 4px 18px rgba(255,215,0,.2);
 }
-.set-card.active-set::before{
+.item-card.active-card::before{
   content:''; position:absolute; top:0; left:0; right:0; height:3px;
   background:linear-gradient(90deg,var(--gold),#ff9f43);
 }
 
-.sc-head{ display:flex; align-items:center; gap:10px; margin-bottom:9px; }
-.sc-cat-icon{ font-size:28px; line-height:1; flex-shrink:0; }
-.sc-info{ flex:1; min-width:0; }
-.sc-name{ font-family:'Fredoka One',cursive; font-size:17px; color:#fff; margin-bottom:1px; }
-.sc-desc{ font-size:11px; color:rgba(255,255,255,.5); line-height:1.3; }
+.ic-head{ display:flex; align-items:center; gap:10px; margin-bottom:9px; }
+.ic-main-icon{ font-size:28px; line-height:1; flex-shrink:0; }
+.ic-info{ flex:1; min-width:0; }
+.ic-name{ font-family:'Fredoka One',cursive; font-size:17px; color:#fff; margin-bottom:1px; }
+.ic-desc{ font-size:11px; color:rgba(255,255,255,.5); line-height:1.3; }
 
-.sc-emojis{
+/* Emoji preview */
+.ic-emojis{
   display:flex; gap:5px; flex-wrap:wrap;
   background:rgba(255,255,255,.04); border-radius:10px;
   padding:7px 9px; margin-bottom:10px;
 }
-.sc-emojis span{ font-size:20px; line-height:1; }
+.ic-emojis span{ font-size:20px; line-height:1; }
 
-.sc-footer{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
-.sc-price{ font-family:'Fredoka One',cursive; font-size:15px; color:#d4a8ff; }
-.sc-price.free{ color:var(--green); }
-.sc-price.spent{ color:rgba(255,255,255,.25); }
+/* Color preview */
+.ic-colors{
+  display:flex; gap:7px; flex-wrap:wrap;
+  background:rgba(255,255,255,.04); border-radius:10px;
+  padding:8px 10px; margin-bottom:10px; align-items:center;
+}
+.color-dot{
+  width:30px; height:30px; border-radius:8px;
+  border:2px solid rgba(255,255,255,.25);
+  flex-shrink:0;
+}
+.color-range-label{
+  font-size:11px; color:rgba(255,255,255,.5); font-style:italic;
+  margin-left:2px; line-height:1.3;
+}
 
-.sc-badge{
+/* Footer */
+.ic-footer{ display:flex; align-items:center; justify-content:space-between; gap:8px; }
+.ic-price{ font-family:'Fredoka One',cursive; font-size:15px; color:#d4a8ff; }
+.ic-price.free{ color:var(--green); }
+.ic-price.spent{ color:rgba(255,255,255,.25); }
+
+.ic-badge{
   position:absolute; top:9px; right:9px;
   font-size:10px; font-weight:900;
   border-radius:7px; padding:2px 7px; letter-spacing:.5px;
 }
-.sc-badge.owned{ background:rgba(46,204,113,.18); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
-.sc-badge.active{ background:rgba(255,215,0,.15); color:var(--gold); border:1px solid rgba(255,215,0,.3); }
+.ic-badge.owned{ background:rgba(46,204,113,.18); color:#2ecc71; border:1px solid rgba(46,204,113,.3); }
+.ic-badge.active{ background:rgba(255,215,0,.15); color:var(--gold); border:1px solid rgba(255,215,0,.3); }
 
+/* Buttons */
 .btn-buy{
   background:linear-gradient(135deg,#9b59b6,#6c3483);
   color:#fff; border:none; border-radius:10px;
   padding:8px 16px; font-size:13px; font-weight:900;
   font-family:'Nunito',sans-serif; cursor:pointer;
   box-shadow:0 3px 10px rgba(155,89,182,.35);
-  transition:transform .15s;
-  white-space:nowrap;
+  transition:transform .15s; white-space:nowrap;
 }
 .btn-buy:active{ transform:scale(.95); }
 .btn-buy:disabled{ opacity:.35; cursor:default; background:rgba(255,255,255,.1); box-shadow:none; }
-
 .btn-equip{
   background:linear-gradient(135deg,#27ae60,#1e8449);
   color:#fff; border:none; border-radius:10px;
@@ -106,14 +131,14 @@
   transition:transform .15s;
 }
 .btn-equip:active{ transform:scale(.95); }
-
 .btn-active{
   background:rgba(255,215,0,.12); color:var(--gold);
   border:1px solid rgba(255,215,0,.3); border-radius:10px;
   padding:8px 16px; font-size:13px; font-weight:900;
-  font-family:'Nunito',sans-serif;
+  font-family:'Nunito',sans-serif; white-space:nowrap;
 }
 
+/* Toast */
 #shop-toast{
   position:fixed;
   bottom:calc(env(safe-area-inset-bottom,0px) + 24px);
@@ -128,7 +153,6 @@
 }
 #shop-toast.show{ opacity:1; transform:translateX(-50%) translateY(0); }
 </style>
-
 <script>
 if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').then(reg => {
@@ -164,8 +188,13 @@ if('serviceWorker' in navigator){
     </div>
   </div>
 
-  <div class="section-label">🎨 Set Emoji — usa in partita</div>
-  <div class="sets-grid" id="sets-grid"></div>
+  <div class="shop-tabs">
+    <button class="shop-tab active" data-tab="emoji">🎨 Set Emoji</button>
+    <button class="shop-tab" data-tab="colori">🎨 Colori blocchi</button>
+  </div>
+
+  <div class="shop-panel visible" id="panel-emoji"></div>
+  <div class="shop-panel" id="panel-colori"></div>
 
 </div>
 </div>
@@ -174,161 +203,197 @@ if('serviceWorker' in navigator){
 
 <script src="data.js"></script>
 <script>
+// ── Catalogo emoji sets ──
 const EMOJI_SETS = [
-  {
-    id: 'frutta',
-    name: 'Frutta classica',
-    icon: '🍉',
-    desc: 'Il set originale — frutta fresca e colorata',
-    emojis: ['🍎','🍊','🍋','🍇','🍓','🫐','🍑','🍒','🥝','🍍'],
-    price: 0,
-  },
-  {
-    id: 'cibo',
-    name: 'Cibo & Dolci',
-    icon: '🍕',
-    desc: 'Pizza, gelato, sushi e altri sfizi deliziosi',
-    emojis: ['🍕','🍔','🌮','🍣','🍩','🎂','🧁','🍫','🍦','🥐'],
-    price: 300,
-  },
-  {
-    id: 'animali',
-    name: 'Animali',
-    icon: '🦁',
-    desc: 'Savana, mare e giungla sulla tua griglia',
-    emojis: ['🦁','🐘','🦊','🐧','🦋','🐬','🦄','🐸','🦀','🐙'],
-    price: 400,
-  },
-  {
-    id: 'spazio',
-    name: 'Spazio',
-    icon: '🚀',
-    desc: 'Stelle, pianeti e galassie nel tuo gioco',
-    emojis: ['🚀','🌙','⭐','🪐','☄️','🛸','🌌','💫','🔭','👾'],
-    price: 500,
-  },
-  {
-    id: 'sport',
-    name: 'Sport',
-    icon: '⚽',
-    desc: 'Per i veri campioni dentro e fuori dal campo',
-    emojis: ['⚽','🏀','🎾','🏈','⚾','🏐','🎱','🏓','🥊','🎯'],
-    price: 350,
-  },
-  {
-    id: 'natura',
-    name: 'Natura & Piante',
-    icon: '🌸',
-    desc: 'Fiori, foglie e la bellezza del mondo naturale',
-    emojis: ['🌸','🌺','🌻','🌴','🍄','🌊','🔥','❄️','🌈','⚡'],
-    price: 450,
-  },
+  { id:'frutta',  icon:'🍉', name:'Frutta classica',   desc:'Il set originale — frutta fresca e colorata',       emojis:['🍎','🍊','🍋','🍇','🍓','🫐','🍑','🍒','🥝','🍍'], price:0 },
+  { id:'cibo',    icon:'🍕', name:'Cibo & Dolci',       desc:'Pizza, gelato, sushi e altri sfizi deliziosi',      emojis:['🍕','🍔','🌮','🍣','🍩','🎂','🧁','🍫','🍦','🥐'], price:3000 },
+  { id:'animali', icon:'🦁', name:'Animali',            desc:'Savana, mare e giungla sulla tua griglia',          emojis:['🦁','🐘','🦊','🐧','🦋','🐬','🦄','🐸','🦀','🐙'], price:4500 },
+  { id:'spazio',  icon:'🚀', name:'Spazio',             desc:'Stelle, pianeti e galassie nel tuo gioco',          emojis:['🚀','🌙','⭐','🪐','☄️','🛸','🌌','💫','🔭','👾'], price:6000 },
+  { id:'sport',   icon:'⚽', name:'Sport',              desc:'Per i veri campioni dentro e fuori dal campo',      emojis:['⚽','🏀','🎾','🏈','⚾','🏐','🎱','🏓','🥊','🎯'], price:4000 },
+  { id:'natura',  icon:'🌸', name:'Natura & Piante',    desc:'Fiori, foglie e la bellezza del mondo naturale',    emojis:['🌸','🌺','🌻','🌴','🍄','🌊','🔥','❄️','🌈','⚡'], price:5000 },
 ];
 
-function getOwnedSets(){
-  try{ return JSON.parse(localStorage.getItem('fb_owned_sets')||'["frutta"]'); }
-  catch(e){ return ['frutta']; }
-}
-function saveOwnedSets(arr){ localStorage.setItem('fb_owned_sets', JSON.stringify(arr)); }
+// ── Catalogo colori blocchi ──
+const COLOR_THEMES = [
+  { id:'default', icon:'🪟', name:'Vetro (default)',   desc:'Blocchi trasparenti senza colore',
+    colors:['rgba(255,255,255,.15)','rgba(255,255,255,.1)'],  price:0 },
+  { id:'rosso',   icon:'🔴', name:'Rosso fuoco',       desc:'Blocchi rosso intenso — aggressivo e deciso',
+    colors:['#c0392b','#e74c3c','#ff6b6b'],                    price:2500 },
+  { id:'blu',     icon:'🔵', name:'Blu oceano',        desc:'Blocchi blu profondo come il mare',
+    colors:['#1a5276','#2980b9','#5dade2'],                    price:2500 },
+  { id:'verde',   icon:'🟢', name:'Verde foresta',     desc:'Blocchi verde brillante — fresco e naturale',
+    colors:['#1e8449','#27ae60','#58d68d'],                    price:2500 },
+  { id:'giallo',  icon:'🟡', name:'Giallo oro',        desc:'Blocchi giallo dorato — splendono come trofei',
+    colors:['#b7950b','#f1c40f','#f9e547'],                    price:3000 },
+  { id:'viola',   icon:'🟣', name:'Viola elettrico',   desc:'Blocchi viola vivido — misteriosi e potenti',
+    colors:['#6c3483','#9b59b6','#c39bd3'],                    price:3000 },
+  { id:'arancio', icon:'🟠', name:'Arancio vulcano',   desc:'Blocchi arancio incandescente',
+    colors:['#ba4a00','#e67e22','#f0a500'],                    price:3000 },
+  { id:'nero',    icon:'⬛', name:'Nero assoluto',     desc:'Blocchi neri eleganti — per i veri duri',
+    colors:['#1c1c1c','#2c2c2c','#3d3d3d'],                    price:4000 },
+  { id:'rosa',    icon:'🩷', name:'Rosa neon',         desc:'Blocchi rosa fluo — colorati e vibranti',
+    colors:['#c0185a','#e91e8c','#ff6ec7'],                    price:4000 },
+  { id:'ciano',   icon:'🩵', name:'Ciano ghiaccio',    desc:'Blocchi ciano brillante come cristalli di ghiaccio',
+    colors:['#117a8b','#17a2b8','#6dd5ed'],                    price:4000 },
+  { id:'arcobaleno', icon:'🌈', name:'Arcobaleno',     desc:'Ogni blocco ha un colore diverso — il massimo!',
+    colors:['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6'],price:8000 },
+];
+
+// ── Storage ──
+function getOwnedSets(){ try{return JSON.parse(localStorage.getItem('fb_owned_sets')||'["frutta"]');}catch(e){return['frutta'];} }
+function saveOwnedSets(a){ localStorage.setItem('fb_owned_sets',JSON.stringify(a)); }
 function getActiveSetId(){ return localStorage.getItem('fb_active_set')||'frutta'; }
-function saveActiveSetId(id){ localStorage.setItem('fb_active_set', id); }
+function saveActiveSetId(id){ localStorage.setItem('fb_active_set',id); }
+
+function getOwnedColors(){ try{return JSON.parse(localStorage.getItem('fb_owned_colors')||'["default"]');}catch(e){return['default'];} }
+function saveOwnedColors(a){ localStorage.setItem('fb_owned_colors',JSON.stringify(a)); }
+function getActiveColorId(){ return localStorage.getItem('fb_active_color_id')||'default'; }
+function saveActiveColorId(id){
+  localStorage.setItem('fb_active_color_id', id);
+  const theme = COLOR_THEMES.find(c=>c.id===id);
+  // Save the hex for game.html to read
+  if(!theme || id==='default') localStorage.removeItem('fb_active_color');
+  else localStorage.setItem('fb_active_color', JSON.stringify(theme.colors));
+}
 
 function showToast(msg){
-  const t = document.getElementById('shop-toast');
-  t.textContent = msg; t.classList.add('show');
-  clearTimeout(t._t);
-  t._t = setTimeout(()=>t.classList.remove('show'), 2200);
+  const t=document.getElementById('shop-toast');
+  t.textContent=msg; t.classList.add('show');
+  clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2400);
 }
 
-function renderShop(){
-  const credits = getBonusPoints();
-  document.getElementById('credits-val').textContent = credits.toLocaleString();
-  const owned = getOwnedSets();
-  const activeId = getActiveSetId();
-  const grid = document.getElementById('sets-grid');
-  grid.innerHTML = '';
+// ── Render emoji panel ──
+function renderEmoji(){
+  const credits=getBonusPoints();
+  const owned=getOwnedSets(), activeId=getActiveSetId();
+  const panel=document.getElementById('panel-emoji');
+  panel.innerHTML='';
 
-  EMOJI_SETS.forEach(set => {
-    const isOwned = owned.includes(set.id);
-    const isActive = activeId === set.id;
-    const canAfford = credits >= set.price;
+  EMOJI_SETS.forEach(set=>{
+    const isOwned=owned.includes(set.id), isActive=activeId===set.id;
+    const canAfford=credits>=set.price;
+    const card=document.createElement('div');
+    card.className='item-card'+(isActive?' active-card':isOwned?' owned-card':'');
 
-    const card = document.createElement('div');
-    card.className = 'set-card' + (isActive ? ' active-set' : isOwned ? ' owned' : '');
+    let html='';
+    if(isActive) html+=`<div class="ic-badge active">✦ Attivo</div>`;
+    else if(isOwned) html+=`<div class="ic-badge owned">✓ Posseduto</div>`;
 
-    let html = '';
+    html+=`<div class="ic-head">
+      <div class="ic-main-icon">${set.icon}</div>
+      <div class="ic-info"><div class="ic-name">${set.name}</div><div class="ic-desc">${set.desc}</div></div>
+    </div>`;
+    html+=`<div class="ic-emojis">${set.emojis.map(e=>`<span>${e}</span>`).join('')}</div>`;
 
-    // Badge
-    if(isActive) html += `<div class="sc-badge active">✦ Attivo</div>`;
-    else if(isOwned) html += `<div class="sc-badge owned">✓ Posseduto</div>`;
-
-    // Head
-    html += `
-      <div class="sc-head">
-        <div class="sc-cat-icon">${set.icon}</div>
-        <div class="sc-info">
-          <div class="sc-name">${set.name}</div>
-          <div class="sc-desc">${set.desc}</div>
-        </div>
-      </div>`;
-
-    // Emoji preview
-    html += `<div class="sc-emojis">${set.emojis.map(e=>`<span>${e}</span>`).join('')}</div>`;
-
-    // Footer
-    const priceHtml = set.price === 0
-      ? `<div class="sc-price free">✓ Gratis</div>`
-      : isOwned
-        ? `<div class="sc-price spent">${set.price.toLocaleString()} 💎</div>`
-        : `<div class="sc-price">${set.price.toLocaleString()} 💎</div>`;
+    const priceHtml = set.price===0
+      ? `<div class="ic-price free">✓ Gratis</div>`
+      : isOwned ? `<div class="ic-price spent">${set.price.toLocaleString()} 💎</div>`
+                : `<div class="ic-price">${set.price.toLocaleString()} 💎</div>`;
 
     let btnHtml;
-    if(isActive){
-      btnHtml = `<div class="btn-active">✦ In uso</div>`;
-    } else if(isOwned){
-      btnHtml = `<button class="btn-equip" data-id="${set.id}">Usa questo</button>`;
-    } else {
-      if(canAfford){
-        btnHtml = `<button class="btn-buy" data-id="${set.id}">Acquista</button>`;
-      } else {
-        btnHtml = `<button class="btn-buy" disabled>🔒 Servono ${set.price.toLocaleString()}</button>`;
-      }
-    }
+    if(isActive) btnHtml=`<div class="btn-active">✦ In uso</div>`;
+    else if(isOwned) btnHtml=`<button class="btn-equip" data-id="${set.id}">Usa questo</button>`;
+    else if(canAfford) btnHtml=`<button class="btn-buy" data-id="${set.id}">Acquista</button>`;
+    else btnHtml=`<button class="btn-buy" disabled>🔒 ${set.price.toLocaleString()}</button>`;
 
-    html += `<div class="sc-footer">${priceHtml}${btnHtml}</div>`;
-    card.innerHTML = html;
-    grid.appendChild(card);
+    html+=`<div class="ic-footer">${priceHtml}${btnHtml}</div>`;
+    card.innerHTML=html; panel.appendChild(card);
   });
 
-  // Bind
-  grid.querySelectorAll('.btn-buy:not(:disabled)').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const set = EMOJI_SETS.find(s => s.id === btn.dataset.id);
-      if(!set) return;
-      const pts = getBonusPoints();
-      if(pts < set.price){ showToast('❌ Punti insufficienti!'); return; }
-      localStorage.setItem('fb_bonus', pts - set.price);
-      const owned2 = getOwnedSets();
-      if(!owned2.includes(set.id)) owned2.push(set.id);
-      saveOwnedSets(owned2);
-      showToast(`✅ "${set.name}" acquistato!`);
-      renderShop();
+  panel.querySelectorAll('.btn-buy:not(:disabled)').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const set=EMOJI_SETS.find(s=>s.id===btn.dataset.id); if(!set) return;
+      const pts=getBonusPoints(); if(pts<set.price){showToast('❌ Punti insufficienti!');return;}
+      localStorage.setItem('fb_bonus',pts-set.price);
+      const o=getOwnedSets(); if(!o.includes(set.id))o.push(set.id); saveOwnedSets(o);
+      showToast(`✅ "${set.name}" acquistato!`); renderEmoji(); updateCredits();
     });
   });
-
-  grid.querySelectorAll('.btn-equip').forEach(btn => {
-    btn.addEventListener('click', () => {
-      const set = EMOJI_SETS.find(s => s.id === btn.dataset.id);
-      if(!set) return;
-      saveActiveSetId(set.id);
-      showToast(`🎨 "${set.name}" attivato!`);
-      renderShop();
+  panel.querySelectorAll('.btn-equip').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const set=EMOJI_SETS.find(s=>s.id===btn.dataset.id); if(!set) return;
+      saveActiveSetId(set.id); showToast(`🎨 "${set.name}" attivato!`); renderEmoji();
     });
   });
 }
 
-document.getElementById('back-btn').addEventListener('click', () => location.href = 'index.html');
-renderShop();
+// ── Render colori panel ──
+function renderColors(){
+  const credits=getBonusPoints();
+  const owned=getOwnedColors(), activeId=getActiveColorId();
+  const panel=document.getElementById('panel-colori');
+  panel.innerHTML='';
+
+  COLOR_THEMES.forEach(theme=>{
+    const isOwned=owned.includes(theme.id), isActive=activeId===theme.id;
+    const canAfford=credits>=theme.price;
+    const card=document.createElement('div');
+    card.className='item-card'+(isActive?' active-card':isOwned?' owned-card':'');
+
+    let html='';
+    if(isActive) html+=`<div class="ic-badge active">✦ Attivo</div>`;
+    else if(isOwned) html+=`<div class="ic-badge owned">✓ Posseduto</div>`;
+
+    html+=`<div class="ic-head">
+      <div class="ic-main-icon">${theme.icon}</div>
+      <div class="ic-info"><div class="ic-name">${theme.name}</div><div class="ic-desc">${theme.desc}</div></div>
+    </div>`;
+
+    // Color swatches
+    const swatches = theme.colors.map(c=>`<div class="color-dot" style="background:${c}"></div>`).join('');
+    html+=`<div class="ic-colors">${swatches}<span class="color-range-label">Colore dei blocchi in partita</span></div>`;
+
+    const priceHtml = theme.price===0
+      ? `<div class="ic-price free">✓ Gratis</div>`
+      : isOwned ? `<div class="ic-price spent">${theme.price.toLocaleString()} 💎</div>`
+                : `<div class="ic-price">${theme.price.toLocaleString()} 💎</div>`;
+
+    let btnHtml;
+    if(isActive) btnHtml=`<div class="btn-active">✦ In uso</div>`;
+    else if(isOwned) btnHtml=`<button class="btn-equip" data-color="${theme.id}">Usa questo</button>`;
+    else if(canAfford) btnHtml=`<button class="btn-buy" data-color="${theme.id}">Acquista</button>`;
+    else btnHtml=`<button class="btn-buy" disabled>🔒 ${theme.price.toLocaleString()}</button>`;
+
+    html+=`<div class="ic-footer">${priceHtml}${btnHtml}</div>`;
+    card.innerHTML=html; panel.appendChild(card);
+  });
+
+  panel.querySelectorAll('.btn-buy:not(:disabled)').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const theme=COLOR_THEMES.find(t=>t.id===btn.dataset.color); if(!theme) return;
+      const pts=getBonusPoints(); if(pts<theme.price){showToast('❌ Punti insufficienti!');return;}
+      localStorage.setItem('fb_bonus',pts-theme.price);
+      const o=getOwnedColors(); if(!o.includes(theme.id))o.push(theme.id); saveOwnedColors(o);
+      showToast(`✅ "${theme.name}" acquistato!`); renderColors(); updateCredits();
+    });
+  });
+  panel.querySelectorAll('.btn-equip').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const theme=COLOR_THEMES.find(t=>t.id===btn.dataset.color); if(!theme) return;
+      saveActiveColorId(theme.id); showToast(`🎨 "${theme.name}" attivato!`); renderColors();
+    });
+  });
+}
+
+function updateCredits(){
+  document.getElementById('credits-val').textContent = getBonusPoints().toLocaleString();
+}
+
+// ── Tabs ──
+document.querySelectorAll('.shop-tab').forEach(tab=>{
+  tab.addEventListener('click',()=>{
+    document.querySelectorAll('.shop-tab').forEach(t=>t.classList.remove('active'));
+    document.querySelectorAll('.shop-panel').forEach(p=>p.classList.remove('visible'));
+    tab.classList.add('active');
+    document.getElementById('panel-'+tab.dataset.tab).classList.add('visible');
+  });
+});
+
+document.getElementById('back-btn').addEventListener('click',()=>location.href='index.html');
+
+updateCredits();
+renderEmoji();
+renderColors();
 </script>
 </body>
 </html>
