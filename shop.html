@@ -36,10 +36,15 @@
 .cb-sub{ font-size:10px; color:rgba(200,150,255,.45); margin-top:2px; }
 
 /* Tabs */
-.shop-tabs{ display:flex; gap:6px; width:100%; }
+.shop-tabs{
+  display:flex; gap:5px; width:100%;
+  overflow-x:auto; -webkit-overflow-scrolling:touch;
+  scrollbar-width:none; padding-bottom:2px;
+}
+.shop-tabs::-webkit-scrollbar{ display:none; }
 .shop-tab{
-  flex:1; padding:9px 0; border-radius:12px; cursor:pointer;
-  text-align:center; font-size:13px; font-weight:700;
+  flex-shrink:0; padding:9px 12px; border-radius:12px; cursor:pointer;
+  text-align:center; font-size:12px; font-weight:700; white-space:nowrap;
   font-family:'Nunito',sans-serif;
   background:var(--glass); border:1px solid var(--gb);
   color:rgba(255,255,255,.55); transition:all .18s;
@@ -207,13 +212,17 @@ if('serviceWorker' in navigator){
     </div>
   </div>
 
-  <div class="shop-tabs">
+  <div class="shop-tabs" id="shop-tabs-row">
     <button class="shop-tab active" data-tab="powerup">⚡ Power-Up</button>
+    <button class="shop-tab" data-tab="multi">✖️ Multi</button>
+    <button class="shop-tab" data-tab="sfondi">🖼️ Sfondi</button>
     <button class="shop-tab" data-tab="emoji">🎨 Emoji</button>
     <button class="shop-tab" data-tab="colori">🎨 Colori</button>
   </div>
 
   <div class="shop-panel visible" id="panel-powerup"></div>
+  <div class="shop-panel" id="panel-multi"></div>
+  <div class="shop-panel" id="panel-sfondi"></div>
   <div class="shop-panel" id="panel-emoji"></div>
   <div class="shop-panel" id="panel-colori"></div>
 
@@ -227,11 +236,11 @@ if('serviceWorker' in navigator){
 // ── Catalogo emoji sets ──
 const EMOJI_SETS = [
   { id:'frutta',  icon:'🍉', name:'Frutta classica',   desc:'Il set originale — frutta fresca e colorata',       emojis:['🍎','🍊','🍋','🍇','🍓','🫐','🍑','🍒','🥝','🍍'], price:0 },
-  { id:'cibo',    icon:'🍕', name:'Cibo & Dolci',       desc:'Pizza, gelato, sushi e altri sfizi deliziosi',      emojis:['🍕','🍔','🌮','🍣','🍩','🎂','🧁','🍫','🍦','🥐'], price:3000 },
-  { id:'animali', icon:'🦁', name:'Animali',            desc:'Savana, mare e giungla sulla tua griglia',          emojis:['🦁','🐘','🦊','🐧','🦋','🐬','🦄','🐸','🦀','🐙'], price:4500 },
-  { id:'spazio',  icon:'🚀', name:'Spazio',             desc:'Stelle, pianeti e galassie nel tuo gioco',          emojis:['🚀','🌙','⭐','🪐','☄️','🛸','🌌','💫','🔭','👾'], price:6000 },
-  { id:'sport',   icon:'⚽', name:'Sport',              desc:'Per i veri campioni dentro e fuori dal campo',      emojis:['⚽','🏀','🎾','🏈','⚾','🏐','🎱','🏓','🥊','🎯'], price:4000 },
-  { id:'natura',  icon:'🌸', name:'Natura & Piante',    desc:'Fiori, foglie e la bellezza del mondo naturale',    emojis:['🌸','🌺','🌻','🌴','🍄','🌊','🔥','❄️','🌈','⚡'], price:5000 },
+  { id:'cibo',    icon:'🍕', name:'Cibo & Dolci',       desc:'Pizza, gelato, sushi e altri sfizi deliziosi',      emojis:['🍕','🍔','🌮','🍣','🍩','🎂','🧁','🍫','🍦','🥐'], price:1000 },
+  { id:'animali', icon:'🦁', name:'Animali',            desc:'Savana, mare e giungla sulla tua griglia',          emojis:['🦁','🐘','🦊','🐧','🦋','🐬','🦄','🐸','🦀','🐙'], price:1500 },
+  { id:'sport',   icon:'⚽', name:'Sport',              desc:'Per i veri campioni dentro e fuori dal campo',      emojis:['⚽','🏀','🎾','🏈','⚾','🏐','🎱','🏓','🥊','🎯'], price:1800 },
+  { id:'natura',  icon:'🌸', name:'Natura & Piante',    desc:'Fiori, foglie e la bellezza del mondo naturale',    emojis:['🌸','🌺','🌻','🌴','🍄','🌊','🔥','❄️','🌈','⚡'], price:2200 },
+  { id:'spazio',  icon:'🚀', name:'Spazio',             desc:'Stelle, pianeti e galassie nel tuo gioco',          emojis:['🚀','🌙','⭐','🪐','☄️','🛸','🌌','💫','🔭','👾'], price:3000 },
 ];
 
 // ── Catalogo colori blocchi ──
@@ -239,25 +248,57 @@ const COLOR_THEMES = [
   { id:'default', icon:'🪟', name:'Vetro (default)',   desc:'Blocchi trasparenti senza colore',
     colors:['rgba(255,255,255,.15)','rgba(255,255,255,.1)'],  price:0 },
   { id:'rosso',   icon:'🔴', name:'Rosso fuoco',       desc:'Blocchi rosso intenso — aggressivo e deciso',
-    colors:['#c0392b','#e74c3c','#ff6b6b'],                    price:2500 },
+    colors:['#c0392b','#e74c3c','#ff6b6b'],                    price:1000 },
   { id:'blu',     icon:'🔵', name:'Blu oceano',        desc:'Blocchi blu profondo come il mare',
-    colors:['#1a5276','#2980b9','#5dade2'],                    price:2500 },
+    colors:['#1a5276','#2980b9','#5dade2'],                    price:1200 },
   { id:'verde',   icon:'🟢', name:'Verde foresta',     desc:'Blocchi verde brillante — fresco e naturale',
-    colors:['#1e8449','#27ae60','#58d68d'],                    price:2500 },
+    colors:['#1e8449','#27ae60','#58d68d'],                    price:1400 },
   { id:'giallo',  icon:'🟡', name:'Giallo oro',        desc:'Blocchi giallo dorato — splendono come trofei',
-    colors:['#b7950b','#f1c40f','#f9e547'],                    price:3000 },
+    colors:['#b7950b','#f1c40f','#f9e547'],                    price:1600 },
   { id:'viola',   icon:'🟣', name:'Viola elettrico',   desc:'Blocchi viola vivido — misteriosi e potenti',
-    colors:['#6c3483','#9b59b6','#c39bd3'],                    price:3000 },
+    colors:['#6c3483','#9b59b6','#c39bd3'],                    price:1800 },
   { id:'arancio', icon:'🟠', name:'Arancio vulcano',   desc:'Blocchi arancio incandescente',
-    colors:['#ba4a00','#e67e22','#f0a500'],                    price:3000 },
+    colors:['#ba4a00','#e67e22','#f0a500'],                    price:2200 },
   { id:'nero',    icon:'⬛', name:'Nero assoluto',     desc:'Blocchi neri eleganti — per i veri duri',
-    colors:['#1c1c1c','#2c2c2c','#3d3d3d'],                    price:4000 },
+    colors:['#1c1c1c','#2c2c2c','#3d3d3d'],                    price:2600 },
   { id:'rosa',    icon:'🩷', name:'Rosa neon',         desc:'Blocchi rosa fluo — colorati e vibranti',
-    colors:['#c0185a','#e91e8c','#ff6ec7'],                    price:4000 },
+    colors:['#c0185a','#e91e8c','#ff6ec7'],                    price:3000 },
   { id:'ciano',   icon:'🩵', name:'Ciano ghiaccio',    desc:'Blocchi ciano brillante come cristalli di ghiaccio',
     colors:['#117a8b','#17a2b8','#6dd5ed'],                    price:4000 },
   { id:'arcobaleno', icon:'🌈', name:'Arcobaleno',     desc:'Ogni blocco ha un colore diverso — il massimo!',
-    colors:['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6'],price:8000 },
+    colors:['#e74c3c','#f1c40f','#2ecc71','#3498db','#9b59b6'],price:3500 },
+];
+
+// ── Sfondi griglia ──
+const GRID_THEMES = [
+  { id:'default',  icon:'⬛', name:'Classico',         desc:'Griglia scura senza sfondo — il default',
+    bg:'rgba(255,255,255,.04)', cellEmpty:'rgba(255,255,255,.05)', border:'rgba(255,255,255,.1)', price:0 },
+  { id:'notte',    icon:'🌌', name:'Notte stellata',   desc:'Sfondo blu notte con griglia stellata',
+    bg:'rgba(10,20,60,.7)',    cellEmpty:'rgba(30,50,120,.18)',    border:'rgba(80,120,255,.2)', price:1500 },
+  { id:'foresta',  icon:'🌿', name:'Foresta',          desc:'Verde profondo come una foresta tropicale',
+    bg:'rgba(10,40,20,.7)',    cellEmpty:'rgba(30,100,50,.18)',    border:'rgba(50,180,80,.2)', price:1800 },
+  { id:'lava',     icon:'🌋', name:'Lava',             desc:'Rosso fuoco — la griglia incandescente',
+    bg:'rgba(60,10,5,.75)',    cellEmpty:'rgba(150,30,10,.18)',    border:'rgba(255,80,30,.22)', price:2000 },
+  { id:'oceano',   icon:'🌊', name:'Oceano profondo',  desc:'Azzurro abissale come il fondo del mare',
+    bg:'rgba(5,30,60,.75)',    cellEmpty:'rgba(10,80,140,.18)',    border:'rgba(30,140,220,.22)', price:2200 },
+  { id:'viola',    icon:'💜', name:'Galattico',        desc:'Viola cosmico — sembra uno sfondo di galassia',
+    bg:'rgba(40,5,80,.75)',    cellEmpty:'rgba(100,20,180,.15)',   border:'rgba(160,60,255,.25)', price:2500 },
+  { id:'oro',      icon:'✨', name:'Oro puro',         desc:'Dorato lussuoso — solo per chi vince',
+    bg:'rgba(60,40,0,.75)',    cellEmpty:'rgba(160,110,0,.18)',    border:'rgba(255,200,0,.28)', price:3000 },
+  { id:'ghiaccio', icon:'🧊', name:'Ghiaccio',         desc:'Cristallino e freddo come il polo nord',
+    bg:'rgba(5,50,80,.72)',    cellEmpty:'rgba(100,200,240,.12)',  border:'rgba(160,230,255,.3)', price:3500 },
+];
+
+// ── Moltiplicatori punti ──
+const MULTIPLIERS = [
+  { id:'x2',  icon:'✖️2',  name:'Moltiplicatore x2',  desc:'Raddoppia tutti i punti guadagnati per una partita completa', mult:2, duration:'1 partita', price:3000,
+    color:'rgba(46,204,113,.15)', border:'rgba(46,204,113,.4)' },
+  { id:'x3',  icon:'✖️3',  name:'Moltiplicatore x3',  desc:'Triplica tutti i punti per una partita intera', mult:3, duration:'1 partita', price:5000,
+    color:'rgba(241,196,15,.15)', border:'rgba(241,196,15,.4)' },
+  { id:'x5',  icon:'✖️5',  name:'Moltiplicatore x5',  desc:'Quintuplica i punti — vai a caccia di record!', mult:5, duration:'1 partita', price:8000,
+    color:'rgba(231,76,60,.15)',  border:'rgba(231,76,60,.4)'  },
+  { id:'x10', icon:'✖️10', name:'Moltiplicatore x10', desc:'Decuplica ogni singolo punto. Solo per i leggendari.', mult:10, duration:'1 partita', price:10000,
+    color:'rgba(138,43,226,.18)', border:'rgba(180,100,255,.5)' },
 ];
 
 // ── Storage ──
@@ -285,7 +326,7 @@ function showToast(msg){
 
 // ── Powerup catalogue ──
 const POWERUPS = [
-  { id:'bomb',  icon:'💣', name:'Bomba',            desc:'Distrugge area 5x5 sulla griglia — devastante!', price:500,  color:'rgba(231,76,60,.18)',  border:'rgba(231,76,60,.4)'  },
+  { id:'bomb',  icon:'💣', name:'Bomba',            desc:'Distrugge area 5×5 sulla griglia — devastante!', price:500,  color:'rgba(231,76,60,.18)',  border:'rgba(231,76,60,.4)'  },
   { id:'lh',    icon:'⚡', name:'Fulmine orizzontale',desc:'Elimina una riga intera istantaneamente',           price:250,  color:'rgba(241,196,15,.15)', border:'rgba(241,196,15,.4)' },
   { id:'lv',    icon:'🌩️', name:'Fulmine verticale',  desc:'Elimina una colonna intera istantaneamente',        price:250,  color:'rgba(241,196,15,.15)', border:'rgba(241,196,15,.4)' },
   { id:'ice',   icon:'❄️', name:'Ghiaccio',           desc:'Congela le celle attorno per 2 turni',              price:250,  color:'rgba(100,200,255,.12)',border:'rgba(100,200,255,.4)' },
@@ -337,6 +378,141 @@ function renderPowerups(){
       setInv(pu.id,getInv(pu.id)+qty);
       showToast(`✅ ${pu.icon} ×${qty} acquistati!`);
       renderPowerups(); updateCredits();
+    });
+  });
+}
+
+// ── Storage sfondi ──
+function getActiveGridThemeId(){ return localStorage.getItem('fb_active_grid')||'default'; }
+function saveActiveGridTheme(id){
+  localStorage.setItem('fb_active_grid', id);
+  const t=GRID_THEMES.find(x=>x.id===id);
+  if(!t||id==='default') localStorage.removeItem('fb_grid_theme_data');
+  else localStorage.setItem('fb_grid_theme_data', JSON.stringify({bg:t.bg,cellEmpty:t.cellEmpty,border:t.border}));
+}
+function getOwnedGrids(){ try{return JSON.parse(localStorage.getItem('fb_owned_grids')||'["default"]');}catch(e){return['default'];} }
+function saveOwnedGrids(a){ localStorage.setItem('fb_owned_grids',JSON.stringify(a)); }
+
+// ── Storage moltiplicatori ──
+function getInvMulti(id){ return parseInt(localStorage.getItem('fb_inv_multi_'+id)||'0'); }
+function setInvMulti(id,n){ localStorage.setItem('fb_inv_multi_'+id,Math.max(0,n)); }
+function getActiveMulti(){ return parseInt(localStorage.getItem('fb_active_multi')||'1'); }
+
+// ── Render sfondi ──
+function renderSfondi(){
+  const credits=getBonusPoints();
+  document.getElementById('credits-val').textContent=credits.toLocaleString();
+  const owned=getOwnedGrids(), activeId=getActiveGridThemeId();
+  const panel=document.getElementById('panel-sfondi');
+  panel.innerHTML='';
+
+  GRID_THEMES.forEach(theme=>{
+    const isOwned=owned.includes(theme.id), isActive=activeId===theme.id;
+    const canAfford=credits>=theme.price;
+    const card=document.createElement('div');
+    card.className='item-card'+(isActive?' active-card':isOwned?' owned-card':'');
+
+    let html='';
+    if(isActive) html+=`<div class="ic-badge active">✦ Attivo</div>`;
+    else if(isOwned) html+=`<div class="ic-badge owned">✓ Posseduto</div>`;
+
+    html+=`<div class="ic-head">
+      <div class="ic-main-icon">${theme.icon}</div>
+      <div class="ic-info"><div class="ic-name">${theme.name}</div><div class="ic-desc">${theme.desc}</div></div>
+    </div>`;
+
+    // Grid preview: 4x4 mini grid
+    const previewCells = Array(16).fill(0).map((_,i)=>{
+      const filled=([0,2,5,7,8,11,13,15].includes(i));
+      const bg=filled?'rgba(255,255,255,.45)':theme.cellEmpty;
+      return `<div style="width:14px;height:14px;border-radius:3px;background:${bg};border:1px solid ${theme.border};"></div>`;
+    }).join('');
+    html+=`<div style="display:grid;grid-template-columns:repeat(4,14px);gap:3px;background:${theme.bg};padding:8px;border-radius:10px;margin-bottom:10px;width:fit-content;">${previewCells}</div>`;
+
+    const priceHtml = theme.price===0
+      ? `<div class="ic-price free">✓ Gratis</div>`
+      : isOwned ? `<div class="ic-price spent">${theme.price.toLocaleString()} 💎</div>`
+                : `<div class="ic-price">${theme.price.toLocaleString()} 💎</div>`;
+
+    let btnHtml;
+    if(isActive) btnHtml=`<div class="btn-active">✦ In uso</div>`;
+    else if(isOwned) btnHtml=`<button class="btn-equip" data-grid="${theme.id}">Usa questo</button>`;
+    else if(canAfford) btnHtml=`<button class="btn-buy" data-grid="${theme.id}">Acquista</button>`;
+    else btnHtml=`<button class="btn-buy" disabled>🔒 ${theme.price.toLocaleString()}</button>`;
+
+    html+=`<div class="ic-footer">${priceHtml}${btnHtml}</div>`;
+    card.innerHTML=html; panel.appendChild(card);
+  });
+
+  panel.querySelectorAll('.btn-buy:not(:disabled)').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const theme=GRID_THEMES.find(t=>t.id===btn.dataset.grid); if(!theme)return;
+      const pts=getBonusPoints(); if(pts<theme.price){showToast('Punti insufficienti!');return;}
+      localStorage.setItem('fb_bonus',pts-theme.price);
+      const o=getOwnedGrids(); if(!o.includes(theme.id))o.push(theme.id); saveOwnedGrids(o);
+      showToast('Sfondo "'+theme.name+'" acquistato!'); renderSfondi(); updateCredits();
+    });
+  });
+  panel.querySelectorAll('.btn-equip').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const theme=GRID_THEMES.find(t=>t.id===btn.dataset.grid); if(!theme)return;
+      saveActiveGridTheme(theme.id); showToast('Sfondo "'+theme.name+'" attivato!'); renderSfondi();
+    });
+  });
+}
+
+// ── Render moltiplicatori ──
+function renderMulti(){
+  const credits=getBonusPoints();
+  document.getElementById('credits-val').textContent=credits.toLocaleString();
+  const panel=document.getElementById('panel-multi');
+  panel.innerHTML='';
+
+  // Banner moltiplicatore attivo
+  const activeMult=getActiveMulti();
+  if(activeMult>1){
+    panel.innerHTML+=`<div style="background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,150,0,.1));border:2px solid rgba(255,215,0,.45);border-radius:14px;padding:12px 14px;text-align:center;margin-bottom:4px;">
+      <div style="font-family:Fredoka One,cursive;font-size:22px;color:var(--gold);">✖️${activeMult} ATTIVO</div>
+      <div style="font-size:11px;color:rgba(255,215,0,.7);margin-top:3px;">Moltiplicatore attivo per questa partita</div>
+    </div>`;
+  }
+
+  MULTIPLIERS.forEach(m=>{
+    const owned=getInvMulti(m.id);
+    const canAfford=credits>=m.price;
+    const card=document.createElement('div');
+    card.className='item-card';
+    card.style.cssText=`border-color:${m.border};background:${m.color};`;
+
+    card.innerHTML=`
+      <div class="ic-head" style="margin-bottom:6px;">
+        <div style="font-family:Fredoka One,cursive;font-size:28px;color:#fff;min-width:52px;text-align:center;line-height:1;">${m.icon}</div>
+        <div class="ic-info">
+          <div class="ic-name">${m.name}</div>
+          <div class="ic-desc">${m.desc}</div>
+          <div style="font-size:10px;color:rgba(255,255,255,.4);margin-top:2px;">⏱ Dura: ${m.duration}</div>
+        </div>
+        <div class="pu-owned-badge">${owned}<span style="font-size:9px;color:rgba(255,255,255,.5);margin-left:2px;">poss.</span></div>
+      </div>
+      <div class="ic-footer">
+        <div class="ic-price">${m.price.toLocaleString()} 💎 <span style="font-size:10px;color:rgba(255,255,255,.4);">/ pezzo</span></div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-buy-pu" data-mid="${m.id}" data-qty="1" ${canAfford?'':'disabled'}>+1</button>
+          <button class="btn-buy-pu btn-buy-5" data-mid="${m.id}" data-qty="3" ${credits>=m.price*3?'':'disabled'}>+3</button>
+        </div>
+      </div>`;
+    panel.appendChild(card);
+  });
+
+  panel.querySelectorAll('.btn-buy-pu:not(:disabled)').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const m=MULTIPLIERS.find(x=>x.id===btn.dataset.mid); if(!m)return;
+      const qty=parseInt(btn.dataset.qty)||1;
+      const total=m.price*qty;
+      const pts=getBonusPoints(); if(pts<total){showToast('Punti insufficienti!');return;}
+      localStorage.setItem('fb_bonus',pts-total);
+      setInvMulti(m.id,getInvMulti(m.id)+qty);
+      showToast('✅ '+m.name+' x'+qty+' acquistati!'); renderMulti(); updateCredits();
     });
   });
 }
@@ -465,9 +641,8 @@ document.querySelectorAll('.shop-tab').forEach(tab=>{
     document.querySelectorAll('.shop-panel').forEach(p=>p.classList.remove('visible'));
     tab.classList.add('active');
     document.getElementById('panel-'+tab.dataset.tab).classList.add('visible');
-    if(tab.dataset.tab==='powerup') renderPowerups();
-    if(tab.dataset.tab==='emoji') renderEmoji();
-    if(tab.dataset.tab==='colori') renderColors();
+    const renders={powerup:renderPowerups,multi:renderMulti,sfondi:renderSfondi,emoji:renderEmoji,colori:renderColors};
+    if(renders[tab.dataset.tab]) renders[tab.dataset.tab]();
     updateCredits();
   });
 });
@@ -476,6 +651,8 @@ document.getElementById('back-btn').addEventListener('click',()=>location.href='
 
 updateCredits();
 renderPowerups();
+renderMulti();
+renderSfondi();
 renderEmoji();
 renderColors();
 </script>
