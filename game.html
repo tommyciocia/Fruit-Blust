@@ -2,8 +2,8 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="foto_sfondo.png">
-<link rel="apple-touch-icon" href="foto_sfondo.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="FruitBlast">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -350,8 +350,6 @@ function startGame(){
   GS=cfg.gs;
   grid=Array.from({length:GS},()=>Array(GS).fill(null));
   frozen={}; score=0; combo=0; comboGrace=0; lines=0; mission=cfg.ms; sel=null; dragShape=null; activePowerup=null;
-  // Pick the best available multiplier for this game
-  applyBestMultiplier();
   resetRunStats();
   loadObjState();
  
@@ -380,11 +378,6 @@ function getFruit(){
   const pool = (activeSet && activeSet.length) ? activeSet : FRUITS;
   return pool[Math.floor(Math.random()*pool.length)];
 }
-function getScoreMult(){
-  return parseInt(localStorage.getItem('fb_active_multi')||'1');
-}
-function applyMult(pts){ return Math.round(pts * getScoreMult()); }
-
 function getBlockBg(fr, alpha){
   // Load active color theme (array of hex strings, or null for default)
   let colorData = null;
@@ -424,26 +417,15 @@ function calcCS(){
   return Math.max(26, Math.min(csW, csH));
 }
  
-function getGridTheme(){
-  try{ const raw=localStorage.getItem('fb_grid_theme_data'); return raw?JSON.parse(raw):null; }catch(e){return null;}
-}
-
 function renderGrid(){
   const g=$('grid'); g.innerHTML='';
   const cs=calcCS(), fs=Math.floor(cs*0.52);
-  const theme=getGridTheme();
   g.style.cssText=`display:grid;grid-template-columns:repeat(${GS},${cs}px);gap:3px;`;
-  // Apply grid-wrap background
-  const gw=$('grid-wrap');
-  if(theme){ gw.style.background=theme.bg; gw.style.borderColor=theme.border; }
-  else { gw.style.background=''; gw.style.borderColor=''; }
-
   for(let r=0;r<GS;r++) for(let c=0;c<GS;c++){
     const el=document.createElement('div');
     el.className='cell'+(grid[r][c]?' filled':'');
     el.dataset.row=r; el.dataset.col=c;
     el.style.cssText=`width:${cs}px;height:${cs}px;font-size:${fs}px;`;
-    if(theme && !grid[r][c]){ el.style.background=theme.cellEmpty; el.style.borderColor=theme.border; }
     if(grid[r][c]){ el.textContent=grid[r][c]; el.style.background=getBlockBg(grid[r][c],'.42'); }
     if(frozen[r+','+c]) el.classList.add('frozen');
     g.appendChild(el);
@@ -479,19 +461,21 @@ function thaw(){
 function genShapes(){
   thaw();
   const area=$('shapes-area'); area.innerHTML=''; shapes=[];
+  let specialUsed=false;
   for(let i=0;i<3;i++){
     const base=cfg.sh[Math.floor(Math.random()*cfg.sh.length)];
     const fr=getFruit();
     let sp=null;
-    if(SET.special && Math.random()<cfg.sc){
-      // Assign special based on shape orientation
-      const spanC=Math.max(...base.c.map(c=>c[0]))+1; // width in cols
-      const spanR=Math.max(...base.c.map(c=>c[1]))+1; // height in rows
-      const r=Math.random();
-      if(spanR>spanC && r<0.5) sp='lightV';       // tall shape → vertical lightning
-      else if(spanC>spanR && r<0.5) sp='lightH';  // wide shape → horizontal lightning
-      else if(r<0.25) sp='bomb';
-      else sp='ice';
+    if(SET.special && !specialUsed && Math.random()<cfg.sc){
+      // Weighted special per difficulty — ice drastically reduced on hard
+      const w = diff==='hard'
+        ? [{sp:'bomb',v:35},{sp:'lightH',v:33},{sp:'lightV',v:27},{sp:'ice',v:5}]
+        : diff==='medium'
+        ? [{sp:'bomb',v:30},{sp:'lightH',v:27},{sp:'lightV',v:27},{sp:'ice',v:16}]
+        : [{sp:'bomb',v:25},{sp:'lightH',v:22},{sp:'lightV',v:20},{sp:'ice',v:33}];
+      let rv=Math.random()*100, acc=0;
+      for(const x of w){ acc+=x.v; if(rv<acc){sp=x.sp;break;} }
+      specialUsed=true;
     }
     shapes.push({cells:[...base.c],fr,sp,used:false,el:null});
   }
@@ -817,7 +801,7 @@ function doPlace(row,col){
         if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}
       }
     }
-    score += applyMult(150 + cleared*8);
+    score += 150 + cleared*8;
  
   } else if(sp==='lightH'){
     // Clear ALL rows touched by the shape
@@ -831,7 +815,7 @@ function doPlace(row,col){
       }
       lines++; updMission(); trackStat('lines',1);
     });
-    score += applyMult(120*touchedRows.length);
+    score += 120*touchedRows.length;
  
   } else if(sp==='lightV'){
     // Clear ALL columns touched by the shape
@@ -845,7 +829,7 @@ function doPlace(row,col){
       }
       lines++; updMission(); trackStat('lines',1);
     });
-    score += applyMult(120*touchedCols.length);
+    score += 120*touchedCols.length;
  
   } else if(sp==='ice'){
     // Place the blocks, then freeze the entire row AND column for each placed cell
@@ -873,13 +857,13 @@ function doPlace(row,col){
         }
       }
     });
-    score += applyMult(20 + blockCount*3);
+    score += 20 + blockCount*3;
     trackStat('placed',blockCount); trackStat('bigShape',blockCount);
  
   } else {
     // Normal placement
     placedCells.forEach(([r,c])=>{grid[r][c]=shape.fr;});
-    score+=applyMult(blockCount);
+    score+=blockCount;
     trackStat('placed',blockCount); trackStat('bigShape',blockCount);
     showFloat('+'+blockCount,row,col);
     if(SET.anim) placedCells.forEach(([r,c])=>{
@@ -946,7 +930,7 @@ function checkLines(){
   combo++; comboGrace=0;
   let ls=0;
   toC.forEach(({t,i})=>{
-    ls+=applyMult(100*(combo>1?combo:1)); lines++;
+    ls+=100*(combo>1?combo:1); lines++;
     trackStat('lines',1);
     if(t==='row'){for(let c=0;c<GS;c++){grid[i][c]=null;if(SET.anim){const el=document.querySelector(`.cell[data-row="${i}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}}}
     else{for(let r=0;r<GS;r++){grid[r][i]=null;if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${i}"]`);if(el)el.classList.add('clearing');}}}
@@ -1022,38 +1006,6 @@ function triggerGO(){
 }
  
 // ════════════════════════════════════════
-//  MULTIPLIER
-// ════════════════════════════════════════
-function applyBestMultiplier(){
-  // Use highest-count multiplier available (prefer highest mult)
-  const order=['x10','x5','x3','x2'];
-  for(const id of order){
-    const n=parseInt(localStorage.getItem('fb_inv_multi_'+id)||'0');
-    if(n>0){
-      const multVal={'x2':2,'x3':3,'x5':5,'x10':10}[id]||1;
-      localStorage.setItem('fb_active_multi', multVal);
-      localStorage.setItem('fb_inv_multi_'+id, n-1);
-      // Show indicator
-      showMultBanner(multVal);
-      return;
-    }
-  }
-  localStorage.setItem('fb_active_multi','1');
-}
-function showMultBanner(mult){
-  if(mult<=1) return;
-  let el=$('mult-banner');
-  if(!el){
-    el=document.createElement('div'); el.id='mult-banner';
-    el.style.cssText='position:fixed;top:calc(env(safe-area-inset-top,0px)+8px);left:50%;transform:translateX(-50%) translateY(-60px);background:linear-gradient(135deg,rgba(255,150,0,.95),rgba(255,60,60,.9));color:#fff;font-family:Fredoka One,cursive;font-size:16px;border-radius:50px;padding:6px 20px;z-index:2000;transition:transform .4s cubic-bezier(.34,1.56,.64,1);white-space:nowrap;box-shadow:0 4px 20px rgba(255,100,0,.5);pointer-events:none;';
-    document.body.appendChild(el);
-  }
-  el.textContent='✖️'+mult+' ATTIVO — Punti moltiplicati!';
-  setTimeout(()=>el.style.transform='translateX(-50%) translateY(0)',50);
-  setTimeout(()=>el.style.transform='translateX(-50%) translateY(-60px)',3500);
-}
-
-// ════════════════════════════════════════
 //  POWERUP INVENTORY SYSTEM
 // ════════════════════════════════════════
 function getInv(k){ return parseInt(localStorage.getItem('fb_inv_'+k)||'0'); }
@@ -1107,17 +1059,17 @@ function usePowerupAt(row,col){
       if(r>=0&&r<GS&&cc>=0&&cc<GS){ if(grid[r][cc])cleared++; grid[r][cc]=null; delete frozen[r+','+cc];
         if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${cc}"]`);if(el)el.classList.add('clearing');} }
     }
-    score+=applyMult(150+cleared*8);
+    score+=150+cleared*8;
   } else if(sp==='lightH'){
     trackStat('useLH',1); showFloat('⚡ RIGA!',row,col);
     for(let cc=0;cc<GS;cc++){ grid[row][cc]=null;
       if(SET.anim){const el=document.querySelector(`.cell[data-row="${row}"][data-col="${cc}"]`);if(el)el.classList.add('clearing');} }
-    lines++; updMission(); trackStat('lines',1); score+=applyMult(120);
+    lines++; updMission(); trackStat('lines',1); score+=120;
   } else if(sp==='lightV'){
     trackStat('useLV',1); showFloat('🌩️ COL!',row,col);
     for(let r=0;r<GS;r++){ grid[r][col]=null;
       if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${col}"]`);if(el)el.classList.add('clearing');} }
-    lines++; updMission(); trackStat('lines',1); score+=applyMult(120);
+    lines++; updMission(); trackStat('lines',1); score+=120;
   } else if(sp==='ice'){
     trackStat('useIce',1); showFloat('❄️ FREEZE!',row,col);
     for(let r=row-1;r<=row+1;r++) for(let cc=col-1;cc<=col+1;cc++){
@@ -1125,7 +1077,7 @@ function usePowerupAt(row,col){
         const el=document.querySelector(`.cell[data-row="${r}"][data-col="${cc}"]`);
         if(el){el.classList.add('frozen');if(SET.anim){el.classList.add('freeze-anim');setTimeout(()=>el.classList.remove('freeze-anim'),500);}} }
     }
-    score+=applyMult(30);
+    score+=30;
   }
   activePowerup=null; $('stat-'+invKey).textContent=getInv(invKey);
   clearHL(); updPuUI(); updScore();

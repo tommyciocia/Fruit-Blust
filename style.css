@@ -6,15 +6,15 @@
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;touch-action:manipulation;}
 :root{
   --green:#2ecc71;--yellow:#f1c40f;--red:#e74c3c;--gold:#FFD700;
-  --bg1:#1a0533;--bg2:#0d1f4a;--bg3:#0a2f1f;
+  --bg1:#1a0533;--bg2:#0d1f4a;--bg3:#0a0820;
   --glass:rgba(255,255,255,0.08);--gb:rgba(255,255,255,0.14);
   --sat:env(safe-area-inset-top,0px);--sab:env(safe-area-inset-bottom,0px);
   --radius:18px;
 }
-html,body{height:100%;width:100%;-webkit-text-size-adjust:100%;background:var(--bg3);overscroll-behavior:none;}
+html,body{height:100%;width:100%;-webkit-text-size-adjust:100%;background:#0a0820;overscroll-behavior:none;}
 body{
   font-family:'Nunito',sans-serif;
-  background:linear-gradient(155deg,#1a0533 0%,#0d1f4a 52%,#0a1f2f 100%);
+  background:linear-gradient(155deg,#1a0533 0%,#0d1f4a 52%,#0a1020 100%);
   background-attachment:fixed;
   user-select:none;-webkit-user-select:none;
   overflow:hidden;position:fixed;inset:0;
