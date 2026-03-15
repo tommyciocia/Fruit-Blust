@@ -2,8 +2,9 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="foto_sfondo.png">
-<link rel="apple-touch-icon" href="foto_sfondo.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<link rel="apple-touch-icon" href="icon-192.png">
+<link rel="manifest" href="manifest.json">
 <meta name="apple-mobile-web-app-title" content="FruitBlast">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -38,8 +39,37 @@
 #mission-prog{color:var(--gold);font-weight:900;}
 #diff-pill{font-size:11px;font-weight:900;border-radius:10px;padding:0 11px;
   display:flex;align-items:center;border:1px solid;white-space:nowrap;}
-.stat-row{display:flex;gap:10px;font-size:11px;color:rgba(255,255,255,.52);justify-content:center;}
-.stat-row b{color:rgba(255,255,255,.88);font-weight:900;}
+.powerup-bar{
+  display:flex;align-items:center;gap:5px;width:100%;justify-content:center;
+}
+.pu-btn{
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.14);
+  border-radius:12px;cursor:pointer;color:#fff;
+  min-width:40px;height:44px;font-size:18px;line-height:1;
+  position:relative;transition:background .15s,transform .12s,box-shadow .15s;
+  padding:0 2px;gap:1px;
+  box-shadow:0 2px 8px rgba(0,0,0,.2);
+}
+.pu-btn:active{transform:scale(.9);}
+.pu-btn.active-pu{
+  border-color:var(--gold);background:rgba(255,215,0,.14);
+  box-shadow:0 0 14px rgba(255,215,0,.35);
+  transform:scale(1.08);
+}
+.pu-btn.empty-pu{ opacity:.35; cursor:default; }
+.pu-count{
+  font-size:9px;font-weight:900;font-family:'Nunito',sans-serif;
+  color:rgba(255,255,255,.7);line-height:1;
+}
+.pu-btn.active-pu .pu-count{ color:var(--gold); }
+.hint-pu{ border-color:rgba(100,200,255,.28);background:rgba(100,200,255,.07); }
+.hint-pu.active-pu{ border-color:rgba(100,200,255,.8);background:rgba(100,200,255,.18);box-shadow:0 0 14px rgba(100,200,255,.35); }
+.best-pill{
+  margin-left:auto;font-size:11px;color:rgba(255,255,255,.55);
+  white-space:nowrap;padding:0 4px;
+}
+.best-pill b{color:var(--gold);font-weight:900;}
  
  
  
@@ -169,12 +199,13 @@ if('serviceWorker' in navigator){
     <div id="mission-bar">🎯 Linee: <span id="mission-prog">0/8</span></div>
     <div id="diff-pill"></div>
   </div>
-  <div class="stat-row">
-    <span>💣 <b id="stat-bomb">2</b></span>
-    <span>⚡ <b id="stat-lh">1</b></span>
-    <span>🌩️ <b id="stat-lv">1</b></span>
-    <span>❄️ <b id="stat-ice">2</b></span>
-    <span>🏆 <b id="best-score">0</b></span>
+  <div class="powerup-bar">
+    <button class="pu-btn" id="pu-bomb"  data-sp="bomb">💣<span class="pu-count" id="stat-bomb">0</span></button>
+    <button class="pu-btn" id="pu-lh"    data-sp="lightH">⚡<span class="pu-count" id="stat-lh">0</span></button>
+    <button class="pu-btn" id="pu-lv"    data-sp="lightV">🌩️<span class="pu-count" id="stat-lv">0</span></button>
+    <button class="pu-btn" id="pu-ice"   data-sp="ice">❄️<span class="pu-count" id="stat-ice">0</span></button>
+    <button class="pu-btn hint-pu" id="pu-hint">💡<span class="pu-count" id="stat-hint">0</span></button>
+    <div class="best-pill">🏆 <b id="best-score">0</b></div>
   </div>
  
   <div id="grid-wrap"><div id="grid"></div></div>
@@ -319,12 +350,12 @@ function saveRunStats(){
 function startGame(){
   GS=cfg.gs;
   grid=Array.from({length:GS},()=>Array(GS).fill(null));
-  frozen={}; score=0; combo=0; comboGrace=0; lines=0; mission=cfg.ms; sel=null; dragShape=null;
+  frozen={}; score=0; combo=0; comboGrace=0; lines=0; mission=cfg.ms; sel=null; dragShape=null; activePowerup=null;
   resetRunStats();
   loadObjState();
  
-  $('stat-bomb').textContent=2; $('stat-lh').textContent=1;
-  $('stat-lv').textContent=1;   $('stat-ice').textContent=2;
+  // Load purchased inventory
+  loadInventory();
  
   const p=$('diff-pill');
   p.textContent=cfg.lbl;
@@ -408,7 +439,10 @@ function bindGrid(){
   const old=$('grid'), ng=old.cloneNode(true);
   old.parentNode.replaceChild(ng,old);
   ng.querySelectorAll('.cell').forEach(cell=>{
-    cell.addEventListener('click',()=>{ if(sel&&!dragShape)doPlace(+cell.dataset.row,+cell.dataset.col); });
+    cell.addEventListener('click',()=>{
+      if(activePowerup&&activePowerup!=='hint'){ usePowerupAt(+cell.dataset.row,+cell.dataset.col); return; }
+      if(sel&&!dragShape)doPlace(+cell.dataset.row,+cell.dataset.col);
+    });
     cell.addEventListener('mouseenter',()=>{ if(sel&&!dragShape)previewAt(+cell.dataset.row,+cell.dataset.col); });
     cell.addEventListener('mouseleave',()=>{ if(sel&&!dragShape)clearHL(); });
   });
@@ -571,6 +605,16 @@ function updateDragPreview(cx, cy){
  
 function endDrag(cx, cy){
   hideGhost();
+  // If a powerup is active and user lifts finger, use it on that cell
+  if(activePowerup && activePowerup!=='hint' && !dragShape){
+    const gridEl=document.getElementById('grid');
+    const rect=gridEl.getBoundingClientRect();
+    const cs=calcCS(), step=cs+3;
+    const col=Math.floor((cx-rect.left)/step);
+    const row=Math.floor((cy-rect.top)/step);
+    if(row>=0&&row<GS&&col>=0&&col<GS) usePowerupAt(row,col);
+    return;
+  }
   if(dragShape){
     const [row, col] = fingerToGridRC(cx, cy);
     if(canPlace(row, col, dragShape)) doPlace(row, col);
@@ -828,6 +872,7 @@ function doPlace(row,col){
   }
  
   shape.used=true;
+  if(typeof clearHint==='function')clearHint();
   if(shape.el){shape.el.classList.add('used');shape.el.classList.remove('selected','dragging-source');}
   sel=null; dragShape=null; clearHL(); hideGhost();
   // Decrement frozen timers
@@ -960,6 +1005,131 @@ function triggerGO(){
 }
  
 // ════════════════════════════════════════
+//  POWERUP INVENTORY SYSTEM
+// ════════════════════════════════════════
+function getInv(k){ return parseInt(localStorage.getItem('fb_inv_'+k)||'0'); }
+function setInv(k,n){ localStorage.setItem('fb_inv_'+k,Math.max(0,n)); }
+function useInv(k){ const n=getInv(k); if(n<=0)return false; setInv(k,n-1); return true; }
+
+let activePowerup=null;
+
+function loadInventory(){
+  $('stat-bomb').textContent=getInv('bomb');
+  $('stat-lh').textContent=getInv('lh');
+  $('stat-lv').textContent=getInv('lv');
+  $('stat-ice').textContent=getInv('ice');
+  $('stat-hint').textContent=getInv('hint');
+  updPuUI();
+}
+
+function updPuUI(){
+  const map={bomb:'bomb',lh:'lh',lv:'lv',ice:'ice',hint:'hint'};
+  const spMap={bomb:'bomb',lh:'lightH',lv:'lightV',ice:'ice',hint:'hint'};
+  Object.keys(map).forEach(k=>{
+    const btn=$('pu-'+k); if(!btn)return;
+    const n=getInv(map[k]);
+    const isActive=activePowerup===spMap[k]||(k==='hint'&&activePowerup==='hint');
+    btn.classList.toggle('empty-pu',n<=0&&!isActive);
+    btn.classList.toggle('active-pu',isActive);
+  });
+}
+
+function activatePowerup(sp){
+  // sp: 'bomb','lightH','lightV','ice','hint'
+  const invKey=sp==='lightH'?'lh':sp==='lightV'?'lv':sp==='bomb'?'bomb':sp==='ice'?'ice':'hint';
+  if(getInv(invKey)<=0) return;
+  if(activePowerup===sp){ activePowerup=null; clearHL(); sel=null; updPuUI(); return; }
+  activePowerup=sp; sel=null; dragShape=null; clearHL(); hideGhost(); updPuUI();
+  if(sp==='hint'){
+    useInv('hint'); $('stat-hint').textContent=getInv('hint');
+    activePowerup=null; updPuUI(); showHint(); return;
+  }
+  const msgs={bomb:'💣 Tocca una cella — esploderà 5×5!',lightH:'⚡ Tocca una cella — elimina tutta la riga!',lightV:'🌩️ Tocca una cella — elimina tutta la colonna!',ice:'❄️ Tocca una cella — congela zona attorno!'};
+  showPuToast(msgs[sp]||'');
+}
+
+function usePowerupAt(row,col){
+  const sp=activePowerup; if(!sp||sp==='hint') return false;
+  const invKey=sp==='lightH'?'lh':sp==='lightV'?'lv':sp==='bomb'?'bomb':'ice';
+  if(!useInv(invKey)) return false;
+  if(sp==='bomb'){
+    trackStat('useBomb',1); showFloat('💣 BOOM!',row,col); let cleared=0;
+    for(let r=row-2;r<=row+2;r++) for(let cc=col-2;cc<=col+2;cc++){
+      if(r>=0&&r<GS&&cc>=0&&cc<GS){ if(grid[r][cc])cleared++; grid[r][cc]=null; delete frozen[r+','+cc];
+        if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${cc}"]`);if(el)el.classList.add('clearing');} }
+    }
+    score+=150+cleared*8;
+  } else if(sp==='lightH'){
+    trackStat('useLH',1); showFloat('⚡ RIGA!',row,col);
+    for(let cc=0;cc<GS;cc++){ grid[row][cc]=null;
+      if(SET.anim){const el=document.querySelector(`.cell[data-row="${row}"][data-col="${cc}"]`);if(el)el.classList.add('clearing');} }
+    lines++; updMission(); trackStat('lines',1); score+=120;
+  } else if(sp==='lightV'){
+    trackStat('useLV',1); showFloat('🌩️ COL!',row,col);
+    for(let r=0;r<GS;r++){ grid[r][col]=null;
+      if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${col}"]`);if(el)el.classList.add('clearing');} }
+    lines++; updMission(); trackStat('lines',1); score+=120;
+  } else if(sp==='ice'){
+    trackStat('useIce',1); showFloat('❄️ FREEZE!',row,col);
+    for(let r=row-1;r<=row+1;r++) for(let cc=col-1;cc<=col+1;cc++){
+      if(r>=0&&r<GS&&cc>=0&&cc<GS&&!grid[r][cc]){ frozen[r+','+cc]=2;
+        const el=document.querySelector(`.cell[data-row="${r}"][data-col="${cc}"]`);
+        if(el){el.classList.add('frozen');if(SET.anim){el.classList.add('freeze-anim');setTimeout(()=>el.classList.remove('freeze-anim'),500);}} }
+    }
+    score+=30;
+  }
+  activePowerup=null; $('stat-'+invKey).textContent=getInv(invKey);
+  clearHL(); updPuUI(); updScore();
+  setTimeout(()=>{ checkLines(); renderGrid(); updScore(); checkGO(); },animD());
+  return true;
+}
+
+function showPuToast(msg){
+  let el=$('pu-toast');
+  if(!el){
+    el=document.createElement('div'); el.id='pu-toast';
+    el.style.cssText='position:fixed;bottom:calc(env(safe-area-inset-bottom,0px)+110px);left:50%;transform:translateX(-50%) translateY(12px);background:rgba(20,8,46,.96);border:1px solid rgba(255,255,255,.18);color:#fff;font-size:13px;font-weight:700;border-radius:50px;padding:8px 20px;opacity:0;transition:opacity .2s,transform .2s;z-index:998;white-space:nowrap;pointer-events:none;font-family:Nunito,sans-serif;box-shadow:0 4px 16px rgba(0,0,0,.4);';
+    document.body.appendChild(el);
+  }
+  el.textContent=msg; el.style.opacity='1'; el.style.transform='translateX(-50%) translateY(0)';
+  clearTimeout(showPuToast._t);
+  showPuToast._t=setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(12px)'; },2500);
+}
+
+// Hint system
+let hintActive=false;
+function clearHint(){ document.querySelectorAll('.cell.hint-shape').forEach(e=>e.classList.remove('hint-shape')); hintActive=false; }
+function showHint(){
+  clearHint(); clearHL();
+  let bestScore=-1,bestShape=null,bestR=-1,bestC=-1;
+  const avail=shapes.filter(s=>!s.used); if(!avail.length)return;
+  for(const s of avail){
+    for(let r=0;r<GS;r++) for(let col=0;col<GS;col++){
+      if(!canPlace(r,col,s)) continue;
+      const cells=getPc(r,col,s);
+      const ps=new Set(cells.map(([pr,pc])=>pr+','+pc));
+      let ls=0;
+      for(let rr=0;rr<GS;rr++){
+        let full=true; for(let cc=0;cc<GS;cc++) if(!grid[rr][cc]&&!ps.has(rr+','+cc)){full=false;break;}
+        if(full) ls+=3; else { let f=0; for(let cc=0;cc<GS;cc++) if(grid[rr][cc]||ps.has(rr+','+cc))f++; if(f>=GS-1)ls+=1; }
+      }
+      for(let cc=0;cc<GS;cc++){
+        let full=true; for(let rr=0;rr<GS;rr++) if(!grid[rr][cc]&&!ps.has(rr+','+cc)){full=false;break;}
+        if(full) ls+=3; else { let f=0; for(let rr=0;rr<GS;rr++) if(grid[rr][cc]||ps.has(rr+','+cc))f++; if(f>=GS-1)ls+=1; }
+      }
+      let prox=0; cells.forEach(([pr,pc])=>{ [[-1,0],[1,0],[0,-1],[0,1]].forEach(([dr,dc])=>{ const nr=pr+dr,nc=pc+dc; if(nr>=0&&nr<GS&&nc>=0&&nc<GS&&grid[nr][nc])prox++; }); });
+      const tot=ls*10+s.cells.length+prox;
+      if(tot>bestScore){bestScore=tot;bestShape=s;bestR=r;bestC=col;}
+    }
+  }
+  if(!bestShape)return;
+  shapes.forEach((s,i)=>{ if(s.el)s.el.classList.toggle('selected',s===bestShape); }); sel=bestShape;
+  getPc(bestR,bestC,bestShape).forEach(([r,col])=>{ const el=document.querySelector(`.cell[data-row="${r}"][data-col="${col}"]`); if(el)el.classList.add('hint-shape'); });
+  hintActive=true;
+  clearTimeout(showHint._t); showHint._t=setTimeout(()=>clearHint(),3000);
+}
+
+// ════════════════════════════════════════
 //  EVENTS
 // ════════════════════════════════════════
 window.addEventListener('resize',()=>renderGrid());
@@ -967,6 +1137,12 @@ $('menu-btn').addEventListener('click',()=>{ dragShape=null;hideGhost();location
 $('play-again-btn').addEventListener('click',startGame);
 $('go-menu-btn').addEventListener('click',()=>{ location.href='index.html'; });
  
+// Powerup buttons
+['bomb','lh','lv','ice','hint'].forEach(k=>{
+  const spMap={bomb:'bomb',lh:'lightH',lv:'lightV',ice:'ice',hint:'hint'};
+  const btn=$('pu-'+k); if(btn) btn.addEventListener('click',()=>activatePowerup(spMap[k]));
+});
+
 // Boot
 startGame();
 </script>

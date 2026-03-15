@@ -137,6 +137,25 @@
   padding:8px 16px; font-size:13px; font-weight:900;
   font-family:'Nunito',sans-serif; white-space:nowrap;
 }
+.pu-owned-badge{
+  font-family:'Fredoka One',cursive; font-size:22px; color:#fff;
+  display:flex; flex-direction:column; align-items:center;
+  min-width:36px; text-align:center; line-height:1;
+}
+.btn-buy-pu{
+  background:linear-gradient(135deg,#9b59b6,#6c3483);
+  color:#fff; border:none; border-radius:10px;
+  padding:8px 14px; font-size:14px; font-weight:900;
+  font-family:'Nunito',sans-serif; cursor:pointer;
+  box-shadow:0 3px 10px rgba(155,89,182,.35);
+  transition:transform .15s; white-space:nowrap;
+}
+.btn-buy-pu:active{ transform:scale(.93); }
+.btn-buy-pu:disabled{ opacity:.32; cursor:default; background:rgba(255,255,255,.1); box-shadow:none; }
+.btn-buy-5{
+  background:linear-gradient(135deg,#8e44ad,#512e5f);
+  font-size:13px;
+}
 
 /* Toast */
 #shop-toast{
@@ -189,11 +208,13 @@ if('serviceWorker' in navigator){
   </div>
 
   <div class="shop-tabs">
-    <button class="shop-tab active" data-tab="emoji">🎨 Set Emoji</button>
-    <button class="shop-tab" data-tab="colori">🎨 Colori blocchi</button>
+    <button class="shop-tab active" data-tab="powerup">⚡ Power-Up</button>
+    <button class="shop-tab" data-tab="emoji">🎨 Emoji</button>
+    <button class="shop-tab" data-tab="colori">🎨 Colori</button>
   </div>
 
-  <div class="shop-panel visible" id="panel-emoji"></div>
+  <div class="shop-panel visible" id="panel-powerup"></div>
+  <div class="shop-panel" id="panel-emoji"></div>
   <div class="shop-panel" id="panel-colori"></div>
 
 </div>
@@ -260,6 +281,64 @@ function showToast(msg){
   const t=document.getElementById('shop-toast');
   t.textContent=msg; t.classList.add('show');
   clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove('show'),2400);
+}
+
+// ── Powerup catalogue ──
+const POWERUPS = [
+  { id:'bomb',  icon:'💣', name:'Bomba',            desc:'Distrugge area 5x5 sulla griglia — devastante!', price:500,  color:'rgba(231,76,60,.18)',  border:'rgba(231,76,60,.4)'  },
+  { id:'lh',    icon:'⚡', name:'Fulmine orizzontale',desc:'Elimina una riga intera istantaneamente',           price:250,  color:'rgba(241,196,15,.15)', border:'rgba(241,196,15,.4)' },
+  { id:'lv',    icon:'🌩️', name:'Fulmine verticale',  desc:'Elimina una colonna intera istantaneamente',        price:250,  color:'rgba(241,196,15,.15)', border:'rgba(241,196,15,.4)' },
+  { id:'ice',   icon:'❄️', name:'Ghiaccio',           desc:'Congela le celle attorno per 2 turni',              price:250,  color:'rgba(100,200,255,.12)',border:'rgba(100,200,255,.4)' },
+  { id:'hint',  icon:'💡', name:'Suggerimento',       desc:'Evidenzia la mossa migliore disponibile',           price:500,  color:'rgba(255,215,0,.12)', border:'rgba(255,215,0,.4)'  },
+];
+
+function getInv(k){ return parseInt(localStorage.getItem('fb_inv_'+k)||'0'); }
+function setInv(k,n){ localStorage.setItem('fb_inv_'+k,Math.max(0,n)); }
+
+function renderPowerups(){
+  const credits=getBonusPoints();
+  document.getElementById('credits-val').textContent=credits.toLocaleString();
+  const panel=document.getElementById('panel-powerup');
+  panel.innerHTML='';
+
+  POWERUPS.forEach(pu=>{
+    const owned=getInv(pu.id);
+    const canAfford=credits>=pu.price;
+    const card=document.createElement('div');
+    card.className='item-card';
+    card.style.cssText=`border-color:${pu.border};background:${pu.color};`;
+
+    card.innerHTML=`
+      <div class="ic-head" style="margin-bottom:6px;">
+        <div class="ic-main-icon" style="font-size:32px;">${pu.icon}</div>
+        <div class="ic-info">
+          <div class="ic-name">${pu.name}</div>
+          <div class="ic-desc">${pu.desc}</div>
+        </div>
+        <div class="pu-owned-badge">${owned}<span style="font-size:9px;color:rgba(255,255,255,.5);margin-left:2px;">poss.</span></div>
+      </div>
+      <div class="ic-footer">
+        <div class="ic-price">${pu.price.toLocaleString()} 💎 <span style="font-size:10px;color:rgba(255,255,255,.4);">/ pezzo</span></div>
+        <div style="display:flex;gap:6px;">
+          <button class="btn-buy-pu" data-id="${pu.id}" data-qty="1" ${canAfford?'':'disabled'}>+1</button>
+          <button class="btn-buy-pu btn-buy-5" data-id="${pu.id}" data-qty="5" ${credits>=pu.price*5?'':'disabled'}>+5</button>
+        </div>
+      </div>`;
+    panel.appendChild(card);
+  });
+
+  panel.querySelectorAll('.btn-buy-pu:not(:disabled)').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const pu=POWERUPS.find(p=>p.id===btn.dataset.id); if(!pu)return;
+      const qty=parseInt(btn.dataset.qty)||1;
+      const total=pu.price*qty;
+      const pts=getBonusPoints(); if(pts<total){showToast('❌ Punti insufficienti!');return;}
+      localStorage.setItem('fb_bonus',pts-total);
+      setInv(pu.id,getInv(pu.id)+qty);
+      showToast(`✅ ${pu.icon} ×${qty} acquistati!`);
+      renderPowerups(); updateCredits();
+    });
+  });
 }
 
 // ── Render emoji panel ──
@@ -386,12 +465,17 @@ document.querySelectorAll('.shop-tab').forEach(tab=>{
     document.querySelectorAll('.shop-panel').forEach(p=>p.classList.remove('visible'));
     tab.classList.add('active');
     document.getElementById('panel-'+tab.dataset.tab).classList.add('visible');
+    if(tab.dataset.tab==='powerup') renderPowerups();
+    if(tab.dataset.tab==='emoji') renderEmoji();
+    if(tab.dataset.tab==='colori') renderColors();
+    updateCredits();
   });
 });
 
 document.getElementById('back-btn').addEventListener('click',()=>location.href='index.html');
 
 updateCredits();
+renderPowerups();
 renderEmoji();
 renderColors();
 </script>
