@@ -2,9 +2,8 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="foto_sfondo.png">
+<link rel="apple-touch-icon" href="foto_sfondo.png">
 <meta name="apple-mobile-web-app-title" content="FruitBlast">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -163,7 +162,7 @@ if('serviceWorker' in navigator){
       <div class="slbl">SCORE</div>
       <div id="score">0</div>
       <div id="combo-lbl"></div>
-      <div id="combo-grace"><div class="grace-dot" id="gd0"></div><div class="grace-dot" id="gd1"></div><div class="grace-dot" id="gd2"></div><div class="grace-dot" id="gd3"></div></div>
+      <div id="combo-grace"><div class="grace-dot" id="gd0"></div><div class="grace-dot" id="gd1"></div><div class="grace-dot" id="gd2"></div></div>
     </div>
   </div>
   <div class="g-info-row">
@@ -202,6 +201,21 @@ if('serviceWorker' in navigator){
 <div id="fscore"></div>
  
 <script src="data.js"></script>
+<script>
+// ── Shop: active emoji set ──
+const SHOP_EMOJI_SETS = {
+  frutta:  ['🍎','🍊','🍋','🍇','🍓','🫐','🍑','🍒','🥝','🍍'],
+  cibo:    ['🍕','🍔','🌮','🍣','🍩','🎂','🧁','🍫','🍦','🥐'],
+  animali: ['🦁','🐘','🦊','🐧','🦋','🐬','🦄','🐸','🦀','🐙'],
+  spazio:  ['🚀','🌙','⭐','🪐','☄️','🛸','🌌','💫','🔭','👾'],
+  sport:   ['⚽','🏀','🎾','🏈','⚾','🏐','🎱','🏓','🥊','🎯'],
+  natura:  ['🌸','🌺','🌻','🌴','🍄','🌊','🔥','❄️','🌈','⚡'],
+};
+function getActiveEmojiSet(){
+  const id = localStorage.getItem('fb_active_set')||'frutta';
+  return SHOP_EMOJI_SETS[id] || SHOP_EMOJI_SETS.frutta;
+}
+</script>
 <script>
 // ════════════════════════════════════════
 //  INIT
@@ -343,7 +357,12 @@ function startGame(){
 }
  
 function animD(){ return SET.anim?(SET.speed==='fast'?200:SET.speed==='slow'?680:420):50; }
-function getFruit(){ return SET.fruit?FRUITS[Math.floor(Math.random()*FRUITS.length)]:'■'; }
+function getFruit(){
+  if(!SET.fruit) return '■';
+  const activeSet = getActiveEmojiSet();
+  const pool = (activeSet && activeSet.length) ? activeSet : FRUITS;
+  return pool[Math.floor(Math.random()*pool.length)];
+}
  
 // ════════════════════════════════════════
 //  GRID
@@ -818,15 +837,9 @@ function doPlace(row,col){
 }
  
 // ════════════════════════════════════════
-//  COMBO + GRACE
+//  COMBO + GRACE (fixed 3 mosse)
 // ════════════════════════════════════════
-function calcGrace(){
-  let hot=0;
-  for(let r=0;r<GS;r++) if(grid[r].filter(c=>c!==null).length>=GS-2) hot++;
-  for(let c=0;c<GS;c++) if(grid.map(r=>r[c]).filter(v=>v!==null).length>=GS-2) hot++;
-  if(hot>=6) return 4; if(hot>=4) return 3; if(hot>=2) return 2; if(hot>=1) return 1;
-  return 0;
-}
+const COMBO_GRACE_MAX = 3;
 function updGraceUI(){
   const cg=$('combo-grace'), lbl=$('combo-lbl');
   if(combo===0&&comboGrace===0){ cg.style.display='none'; lbl.textContent=''; return; }
@@ -835,7 +848,7 @@ function updGraceUI(){
     cg.style.display='flex';
     lbl.textContent='🔥 COMBO!';
     lbl.style.color=comboGrace===1?'#e74c3c':'#ff9f43';
-    for(let i=0;i<4;i++){
+    for(let i=0;i<COMBO_GRACE_MAX;i++){
       const d=$('gd'+i); if(!d)continue;
       d.className='grace-dot'+(i<comboGrace?' lit'+(comboGrace===1?' low':''):'');
     }
@@ -852,12 +865,18 @@ function checkLines(){
  
   if(!toC.length){
     if(combo>0){
-      if(comboGrace>0){ comboGrace--; updGraceUI(); if(comboGrace===0) setTimeout(()=>{combo=0;comboGrace=0;updGraceUI();},300); }
-      else { const g=calcGrace(); if(g>0){comboGrace=g;updGraceUI();}else{combo=0;comboGrace=0;updGraceUI();} }
+      if(comboGrace===0){
+        // Prima mossa senza linee: dai sempre 3 grace moves
+        comboGrace=COMBO_GRACE_MAX; updGraceUI();
+      } else {
+        comboGrace--;
+        if(comboGrace===0){ combo=0; updGraceUI(); }
+        else updGraceUI();
+      }
     }
     return;
   }
- 
+
   combo++; comboGrace=0;
   let ls=0;
   toC.forEach(({t,i})=>{

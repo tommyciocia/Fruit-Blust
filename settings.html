@@ -2,9 +2,8 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
-<link rel="icon" type="image/png" href="icon-192.png">
-<link rel="apple-touch-icon" href="icon-192.png">
-<link rel="manifest" href="manifest.json">
+<link rel="icon" type="image/png" href="foto_sfondo.png">
+<link rel="apple-touch-icon" href="foto_sfondo.png">
 <meta name="apple-mobile-web-app-title" content="FruitBlast">
 <meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no,viewport-fit=cover">
 <meta name="mobile-web-app-capable" content="yes">
@@ -134,6 +133,8 @@ $('reset-btn').addEventListener('click',()=>{
     localStorage.removeItem('fb_stats_'+d);
   });
   localStorage.removeItem('fb_bonus');
+  localStorage.removeItem('fb_owned_sets');
+  localStorage.removeItem('fb_active_set');
   alert('✅ Dati azzerati!');
 });
 $('back-btn').addEventListener('click',()=>{ location.href='index.html'; });
