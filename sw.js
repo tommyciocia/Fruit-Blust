@@ -1,8 +1,7 @@
 // ═══════════════════════════════════════════
 //  FruitBlast — Service Worker
-//  Aggiorna il timestamp qui sotto ad ogni commit
-//  oppure usa il GitHub Action per farlo in automatico.
-//  Basta che questo numero sia diverso dall'ultima volta.
+//  Il CACHE_VERSION viene aggiornato automaticamente
+//  dal GitHub Action ad ogni push su main/master.
 // ═══════════════════════════════════════════
 const CACHE_VERSION = 'fruitblast-20250314-1';
 
@@ -16,18 +15,21 @@ const ASSETS = [
   './style.css',
   './data.js',
   './foto_sfondo.png',
+  './manifest.json',
+  './icon-192.png',
+  './icon-512.png',
 ];
 
-// Install: scarica tutti i file freschi dal server
+// Install: scarica tutti i file freschi, NON cachare sw.js
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_VERSION)
       .then(cache => cache.addAll(ASSETS))
-      .then(() => self.skipWaiting()) // non aspettare, attivati subito
+      .then(() => self.skipWaiting())
   );
 });
 
-// Activate: cancella TUTTE le vecchie cache, poi prendi controllo
+// Activate: cancella tutte le vecchie cache
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
@@ -37,15 +39,22 @@ self.addEventListener('activate', e => {
       .then(() => self.clients.claim())
       .then(() => self.clients.matchAll({ type: 'window' }))
       .then(clients => {
-        // Dice a tutte le pagine aperte: ricaricati ora
         clients.forEach(client => client.postMessage({ type: 'SW_UPDATED' }));
       })
   );
 });
 
-// Fetch: prova sempre la rete prima, cache solo se offline
+// Fetch: sw.js viene sempre preso dalla rete (mai da cache!)
+// Tutti gli altri asset: network-first, fallback cache
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
+
+  // Non cachare mai il service worker stesso
+  if (e.request.url.endsWith('sw.js')) {
+    e.respondWith(fetch(e.request));
+    return;
+  }
+
   e.respondWith(
     fetch(e.request)
       .then(response => {
