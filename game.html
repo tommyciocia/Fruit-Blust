@@ -251,7 +251,7 @@
 </style>
  
 <script>
-if('serviceWorker' in navigator){
+if('serviceWorker' in navigator && location.protocol !== 'file:'){
   navigator.serviceWorker.register('./sw.js').then(reg => {
     reg.update();
     reg.addEventListener('updatefound', () => {
@@ -467,18 +467,17 @@ function saveRunStats(){
   try{ const r=localStorage.getItem('fb_stats_'+diff); if(r) stored=JSON.parse(r); }catch(e){}
   const merged={};
 
-  // Cumulativi: si SOMMANO tra partite (obiettivi tipo "usa 5 bombe in totale")
-  const cumulative = ['lines','useBomb','useLH','useLV','useIce','placed','turns'];
-  cumulative.forEach(k=>{
-    merged[k] = (stored[k]||0) + (runStats[k]||0);
+  // Legge cum:true dal data.js per sapere quali stat sommare vs max
+  const cumTypes = new Set();
+  (OBJECTIVES[diff]||[]).forEach(o=>{ if(o.cum) cumTypes.add(o.type); });
+
+  const keys=['lines','score','combo','useBomb','useLH','useLV','useIce','placed','bigShape','multiLine','turns'];
+  keys.forEach(k=>{
+    const cur = k==='score' ? score : (runStats[k]||0);
+    merged[k] = cumTypes.has(k)
+      ? (stored[k]||0) + cur          // cumulativo: somma
+      : Math.max(stored[k]||0, cur);  // singola partita: massimo
   });
-
-  // Best singola partita: si tiene solo il MASSIMO
-  merged.score     = Math.max(stored.score||0, score);
-  merged.combo     = Math.max(stored.combo||0, runStats.combo||0);
-  merged.bigShape  = Math.max(stored.bigShape||0, runStats.bigShape||0);
-  merged.multiLine = Math.max(stored.multiLine||0, runStats.multiLine||0);
-
   localStorage.setItem('fb_stats_'+diff, JSON.stringify(merged));
 }
  
