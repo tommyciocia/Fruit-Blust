@@ -463,15 +463,22 @@ function completeObjective(){
 }
  
 function saveRunStats(){
-  // merge with existing best stats (keep highest values)
   let stored={};
   try{ const r=localStorage.getItem('fb_stats_'+diff); if(r) stored=JSON.parse(r); }catch(e){}
   const merged={};
-  const keys=['lines','score','combo','useBomb','useLH','useLV','useIce','placed','bigShape','multiLine','turns'];
-  keys.forEach(k=>{
-    const cur = k==='score'?score:runStats[k]||0;
-    merged[k] = Math.max(stored[k]||0, cur);
+
+  // Cumulativi: si SOMMANO tra partite (obiettivi tipo "usa 5 bombe in totale")
+  const cumulative = ['lines','useBomb','useLH','useLV','useIce','placed','turns'];
+  cumulative.forEach(k=>{
+    merged[k] = (stored[k]||0) + (runStats[k]||0);
   });
+
+  // Best singola partita: si tiene solo il MASSIMO
+  merged.score     = Math.max(stored.score||0, score);
+  merged.combo     = Math.max(stored.combo||0, runStats.combo||0);
+  merged.bigShape  = Math.max(stored.bigShape||0, runStats.bigShape||0);
+  merged.multiLine = Math.max(stored.multiLine||0, runStats.multiLine||0);
+
   localStorage.setItem('fb_stats_'+diff, JSON.stringify(merged));
 }
  

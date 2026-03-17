@@ -178,6 +178,7 @@ function render(){
   const cur = objs[idx];
   const isDone = completed.has(cur.id);
   const prog = isDone ? cur.target : getProgress(cur, activeDiff);
+  const isCumulative = ['lines','useBomb','useLH','useLV','useIce','placed','turns'].includes(cur.type);
   $('cc-icon').textContent = cur.icon;
   $('cc-name').textContent = cur.name;
   $('cc-desc').textContent = cur.desc;
@@ -185,6 +186,8 @@ function render(){
   $('cc-prog-val').textContent = Math.min(prog,cur.target)+' / '+cur.target;
   $('cc-bar').style.width = Math.min(100,Math.round(prog/cur.target*100))+'%';
   $('cc-bar').style.background = isDone ? 'var(--green)' : '';
+  // Label progress: cumulativi mostrano "in totale", best mostrano "miglior partita"
+  document.querySelector('.cc-prog-label').textContent = isDone ? 'Completato' : isCumulative ? 'Totale accumulato' : 'Miglior partita';
   $('cc-note').textContent = isDone && idx === objs.length-1
     ? '🏆 Tutti gli obiettivi completati!'
     : isDone
@@ -203,6 +206,8 @@ function render(){
 
     const p = done ? o.target : (active ? Math.min(getProgress(o,activeDiff),o.target) : 0);
     const pPct = Math.round(p/o.target*100);
+    const isCum = ['lines','useBomb','useLH','useLV','useIce','placed','turns'].includes(o.type);
+    const progLabel = done ? '' : active ? (isCum ? 'totale' : 'best') : '';
     const row = document.createElement('div');
     row.className = 'obj-row'+(active?' obj-active':done?' obj-done':' obj-upcoming');
     row.innerHTML = `
@@ -215,7 +220,7 @@ function render(){
       <div class="or-right">
         <div class="or-status">${done?'✅':active?'🔓':'🔒'}</div>
         <div class="or-reward">+${o.reward.toLocaleString()}</div>
-        <div class="or-prog">${done||active ? p+'/'+o.target : ''}</div>
+        <div class="or-prog">${done||active ? p+'/'+o.target+(progLabel?' <span style="font-size:8px;opacity:.5">('+progLabel+')</span>':'') : ''}</div>
       </div>`;
     grid.appendChild(row);
   });
