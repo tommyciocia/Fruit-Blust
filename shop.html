@@ -2,6 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta name="google-adsense-account" content="ca-pub-3954056972955412">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <link rel="manifest" href="manifest.json">
@@ -17,11 +18,12 @@
 
 .credits-bar{
   width:100%;
-  background:linear-gradient(135deg,rgba(138,43,226,.22),rgba(75,0,130,.15));
-  border:1px solid rgba(180,100,255,.32);
+  background:linear-gradient(135deg,rgba(138,43,226,.24),rgba(75,0,130,.16));
+  border:1px solid rgba(180,100,255,.36);
   border-radius:14px; padding:10px 14px;
   display:flex; align-items:center; gap:12px;
   position:relative; overflow:hidden;
+  box-shadow:0 4px 18px rgba(138,43,226,.15),inset 0 1px 0 rgba(255,255,255,.07);
 }
 .credits-bar::before{
   content:''; position:absolute; inset:0;
@@ -193,6 +195,8 @@ if('serviceWorker' in navigator){
   });
 }
 </script>
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3954056972955412"
+     crossorigin="anonymous"></script>
 </head>
 <body>
 <div id="app">
@@ -468,10 +472,9 @@ function renderMulti(){
   const panel=document.getElementById('panel-multi');
   panel.innerHTML='';
 
-  // Banner moltiplicatore attivo
   const activeMult=getActiveMulti();
   if(activeMult>1){
-    panel.innerHTML+=`<div style="background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,150,0,.1));border:2px solid rgba(255,215,0,.45);border-radius:14px;padding:12px 14px;text-align:center;margin-bottom:4px;">
+    panel.innerHTML+=`<div style="background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,150,0,.1));border:2px solid rgba(255,215,0,.45);border-radius:14px;padding:12px 14px;text-align:center;margin-bottom:4px;box-shadow:0 0 20px rgba(255,215,0,.15);">
       <div style="font-family:Fredoka One,cursive;font-size:22px;color:var(--gold);">✖️${activeMult} ATTIVO</div>
       <div style="font-size:11px;color:rgba(255,215,0,.7);margin-top:3px;">Verrà usato alla prossima partita · si consuma automaticamente</div>
       <button onclick="localStorage.removeItem('fb_active_multi');renderMulti();" style="margin-top:8px;background:rgba(231,76,60,.18);border:1px solid rgba(231,76,60,.4);color:#e74c3c;border-radius:8px;padding:5px 14px;font-size:12px;font-weight:900;font-family:Nunito,sans-serif;cursor:pointer;">✕ Disattiva</button>
@@ -498,9 +501,9 @@ function renderMulti(){
       </div>
       <div class="ic-footer">
         <div class="ic-price">${m.price.toLocaleString()} 💎 <span style="font-size:10px;color:rgba(255,255,255,.4);">/ pezzo</span></div>
-        <div style="display:flex;gap:6px;">
-          ${owned>0 && !isActive ? `<button class="btn-equip" data-activate="${m.id}" data-mult="${m.mult}">▶ Attiva</button>` : ''}
-          ${isActive ? `<div class="btn-active">✦ Attivo</div>` : ''}
+        <div style="display:flex;gap:6px;align-items:center;">
+          ${owned>0&&!isActive?`<button class="btn-equip" data-activate="${m.id}" data-mult="${m.mult}">▶ Attiva</button>`:''}
+          ${isActive?`<div class="btn-active">✦ Attivo</div>`:''}
           <button class="btn-buy-pu" data-mid="${m.id}" data-qty="1" ${canAfford?'':'disabled'}>+1</button>
           <button class="btn-buy-pu btn-buy-5" data-mid="${m.id}" data-qty="3" ${credits>=m.price*3?'':'disabled'}>+3</button>
         </div>
@@ -508,7 +511,6 @@ function renderMulti(){
     panel.appendChild(card);
   });
 
-  // Attiva
   panel.querySelectorAll('.btn-equip[data-activate]').forEach(btn=>{
     btn.addEventListener('click',()=>{
       const m=MULTIPLIERS.find(x=>x.id===btn.dataset.activate); if(!m)return;

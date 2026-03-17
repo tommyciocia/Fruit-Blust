@@ -2,6 +2,7 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<meta name="google-adsense-account" content="ca-pub-3954056972955412">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
 <meta name="apple-mobile-web-app-title" content="FruitBlast">
@@ -11,6 +12,11 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
 <title>🍉 FruitBlast</title>
 <link rel="stylesheet" href="style.css">
+<!-- ═══════════════════════════════════════
+     GOOGLE ADSENSE — sostituisci ca-pub-3954056972955412
+     con il tuo Publisher ID AdSense
+════════════════════════════════════════ -->
+<script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-3954056972955412" crossorigin="anonymous"></script>
 <style>
 /* ── Game layout ── */
 #game-screen{gap:0;padding-top:calc(var(--sat) + 6px);justify-content:space-between;min-height:100%;padding-bottom:calc(var(--sab) + 6px);}
@@ -33,8 +39,9 @@
 .g-icon-btn:active{background:rgba(255,255,255,.18);}
 .g-info-row{display:flex;gap:6px;align-items:stretch;width:100%;}
 #mission-bar{background:var(--glass);border-radius:10px;padding:6px 12px;
-  font-size:12px;color:rgba(255,255,255,.68);border:1px solid var(--gb);
-  flex:1;display:flex;align-items:center;gap:5px;}
+  font-size:12px;color:rgba(255,255,255,.75);border:1px solid var(--gb);
+  flex:1;display:flex;align-items:center;gap:5px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.06);}
 #mission-prog{color:var(--gold);font-weight:900;}
 #diff-pill{font-size:11px;font-weight:900;border-radius:10px;padding:0 11px;
   display:flex;align-items:center;border:1px solid;white-space:nowrap;}
@@ -43,12 +50,12 @@
 }
 .pu-btn{
   display:flex;flex-direction:column;align-items:center;justify-content:center;
-  background:rgba(255,255,255,.08);border:1.5px solid rgba(255,255,255,.14);
+  background:rgba(255,255,255,.09);border:1.5px solid rgba(255,255,255,.16);
   border-radius:12px;cursor:pointer;color:#fff;
   min-width:40px;height:44px;font-size:18px;line-height:1;
   position:relative;transition:background .15s,transform .12s,box-shadow .15s;
   padding:0 2px;gap:1px;
-  box-shadow:0 2px 8px rgba(0,0,0,.2);
+  box-shadow:0 2px 10px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.07);
 }
 .pu-btn:active{transform:scale(.9);}
 .pu-btn.active-pu{
@@ -73,14 +80,15 @@
  
  
 /* Grid */
-#grid-wrap{background:rgba(255,255,255,.04);border-radius:15px;
-  padding:6px;border:2px solid rgba(255,255,255,.1);
-  box-shadow:0 0 32px rgba(80,30,180,.16);}
+#grid-wrap{background:rgba(255,255,255,.04);border-radius:16px;
+  padding:6px;border:2px solid rgba(255,255,255,.12);
+  box-shadow:0 0 40px rgba(80,30,180,.22),0 4px 20px rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.06);}
 #grid{display:grid;}
 .cell{border-radius:6px;background:rgba(255,255,255,.05);
-  border:1px solid rgba(255,255,255,.07);
+  border:1px solid rgba(255,255,255,.08);
   display:flex;align-items:center;justify-content:center;
-  position:relative;overflow:hidden;}
+  position:relative;overflow:hidden;
+  transition:background .06s,border-color .06s;}
 .cell.filled{background:rgba(255,255,255,.1);}
 .cell.highlight{background:rgba(255,255,200,.22);border-color:rgba(255,255,80,.55);
   transform:scale(1.07);z-index:2;transition:background .06s,transform .06s;}
@@ -97,11 +105,12 @@
 /* Shapes */
 #shapes-area{display:flex;gap:7px;justify-content:center;width:100%;flex-shrink:0;}
 .shape-slot{touch-action:manipulation;background:rgba(255,255,255,.07);border-radius:13px;
-  border:2px solid rgba(255,255,255,.11);
+  border:2px solid rgba(255,255,255,.13);
   flex:1;max-width:32%;min-height:76px;
   display:flex;align-items:center;justify-content:center;
   cursor:grab;position:relative;padding:9px 5px;
-  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s;}
+  box-shadow:0 2px 10px rgba(0,0,0,.25),inset 0 1px 0 rgba(255,255,255,.08);
+  transition:transform .2s cubic-bezier(.34,1.56,.64,1),box-shadow .2s,border-color .2s,background .2s;}
 .shape-slot.selected{border-color:var(--gold);
   box-shadow:0 0 18px rgba(255,215,0,.36),0 4px 16px rgba(255,215,0,.16);
   transform:translateY(-5px) scale(1.06);background:rgba(255,215,0,.07);}
@@ -122,16 +131,97 @@
   will-change:left,top;
 }
  
+/* Banner AdSense fisso in basso */
+#ad-banner-wrap{
+  position:fixed;
+  bottom:0; left:0; right:0;
+  z-index:900;
+  display:flex; justify-content:center; align-items:flex-end;
+  background:rgba(10,8,32,.92);
+  border-top:1px solid rgba(255,255,255,.08);
+  padding-bottom:env(safe-area-inset-bottom,0px);
+  min-height:60px;
+}
+#ad-banner-wrap ins{
+  display:block;
+  width:100%;
+  max-width:480px;
+}
+/* Spazio sotto il gioco per non coprire le forme */
+#game-screen{ padding-bottom:calc(var(--sab) + 66px) !important; }
+
+/* Overlay rewarded video */
+#ad-rewarded-overlay{
+  display:none;
+  position:fixed;inset:0;z-index:9999;
+  background:rgba(8,4,26,.97);
+  flex-direction:column;align-items:center;justify-content:center;gap:18px;
+  padding:24px;
+}
+#ad-rewarded-overlay.visible{ display:flex; }
+.aro-title{
+  font-family:'Fredoka One',cursive;
+  font-size:clamp(26px,8vw,34px);color:#fff;
+  text-align:center;line-height:1.2;
+}
+.aro-sub{
+  font-size:13px;color:rgba(255,255,255,.55);
+  text-align:center;line-height:1.5;
+}
+.aro-reward-preview{
+  display:flex;gap:10px;justify-content:center;align-items:center;
+  background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.12);
+  border-radius:16px;padding:12px 20px;
+}
+.aro-piece{
+  display:flex;flex-direction:column;align-items:center;gap:4px;
+  font-size:11px;color:rgba(255,255,255,.55);
+}
+.aro-piece-icon{
+  font-size:26px;
+  background:rgba(255,255,255,.1);border-radius:10px;
+  padding:6px 10px;border:1px solid rgba(255,255,255,.15);
+}
+.aro-ad-container{
+  width:100%;max-width:360px;min-height:250px;
+  background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);
+  border-radius:14px;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+}
+.aro-skip-row{display:flex;gap:10px;width:100%;max-width:360px;}
+#aro-btn-watch{
+  flex:1;background:linear-gradient(135deg,#27ae60,#1e8449);
+  color:#fff;border:none;border-radius:50px;
+  padding:14px 0;font-size:17px;font-family:'Fredoka One',cursive;
+  cursor:pointer;letter-spacing:.5px;
+  box-shadow:0 6px 20px rgba(39,174,96,.4);
+}
+#aro-btn-watch:active{transform:scale(.97);}
+#aro-btn-skip{
+  background:rgba(255,255,255,.08);color:rgba(255,255,255,.5);
+  border:1px solid rgba(255,255,255,.14);border-radius:50px;
+  padding:14px 18px;font-size:13px;font-weight:700;
+  font-family:'Nunito',sans-serif;cursor:pointer;
+}
+#aro-btn-skip:active{background:rgba(255,255,255,.15);}
+#aro-countdown{
+  font-size:11px;color:rgba(255,255,255,.35);
+  text-align:center;min-height:16px;
+}
+
 /* Game over */
 #go-screen{gap:14px;padding-top:calc(var(--sat) + 8px);padding-bottom:calc(var(--sab) + 12px);text-align:center;justify-content:center;min-height:100vh;min-height:100dvh;}
 .go-emoji{font-size:clamp(54px,15vw,70px);animation:gbounce .5s cubic-bezier(.34,1.56,.64,1);}
 @keyframes gbounce{from{transform:scale(0) rotate(-10deg)}to{transform:scale(1) rotate(0)}}
 .go-title{font-family:'Fredoka One',cursive;font-size:clamp(36px,11vw,48px);color:var(--gold);}
 .go-score{font-family:'Fredoka One',cursive;font-size:clamp(50px,14vw,64px);color:#fff;}
-#go-new-rec{background:linear-gradient(135deg,rgba(255,215,0,.13),rgba(255,150,0,.08));
-  border:1px solid rgba(255,215,0,.26);border-radius:12px;
-  padding:6px 22px;font-size:14px;font-weight:900;color:var(--gold);
-  letter-spacing:1px;text-transform:uppercase;}
+#go-new-rec{background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,150,0,.12));
+  border:1px solid rgba(255,215,0,.4);border-radius:12px;
+  padding:8px 24px;font-size:15px;font-weight:900;color:var(--gold);
+  letter-spacing:1.5px;text-transform:uppercase;
+  box-shadow:0 0 20px rgba(255,215,0,.25);
+  animation:recPulse 1s ease-in-out infinite alternate;}
+@keyframes recPulse{from{box-shadow:0 0 14px rgba(255,215,0,.2)}to{box-shadow:0 0 28px rgba(255,215,0,.5)}}
 .go-cards{display:flex;gap:7px;width:100%;}
 .go-card{flex:1;background:var(--glass);border:1px solid var(--gb);border-radius:13px;padding:11px 5px;text-align:center;}
 .gc-lbl{font-size:10px;color:rgba(255,255,255,.42);text-transform:uppercase;letter-spacing:1px;margin-bottom:4px;}
@@ -152,9 +242,12 @@
 .cell.line-ready{background:rgba(255,230,80,.18);border-color:rgba(255,220,60,.5);transition:background .08s,border-color .08s;}
 .cell.line-complete{background:rgba(100,255,160,.28);border-color:rgba(80,255,140,.7);box-shadow:inset 0 0 6px rgba(80,255,140,.25);transition:background .08s,border-color .08s;z-index:1;}
 .cell.bomb-zone{background:rgba(255,80,80,.2);border-color:rgba(255,100,80,.55);transition:background .08s;}
-#fscore{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:20px;
-  color:var(--gold);text-shadow:0 0 10px rgba(255,215,0,.7);z-index:999;opacity:0;
-  transition:opacity .65s,transform .65s;}
+.cell.hint-shape{background:rgba(100,200,255,.22)!important;border-color:rgba(80,180,255,.7)!important;
+  box-shadow:inset 0 0 8px rgba(80,200,255,.3);animation:hintPulse 0.8s ease-in-out infinite alternate;}
+@keyframes hintPulse{from{box-shadow:inset 0 0 6px rgba(80,200,255,.2),0 0 8px rgba(80,200,255,.2)}to{box-shadow:inset 0 0 12px rgba(80,200,255,.5),0 0 16px rgba(80,200,255,.4)}}
+#fscore{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:24px;
+  color:var(--gold);text-shadow:0 0 14px rgba(255,215,0,.9),0 2px 0 rgba(0,0,0,.4);z-index:999;opacity:0;
+  transition:opacity .5s,transform .7s;letter-spacing:.5px;}
 </style>
  
 <script>
@@ -227,6 +320,44 @@ if('serviceWorker' in navigator){
 </div>
  
 </div><!-- #app -->
+
+<!-- Banner AdSense fisso in fondo -->
+<div id="ad-banner-wrap">
+  <!-- Sostituisci data-ad-slot con il tuo Ad Slot ID banner 320x50 o Responsive -->
+  <ins class="adsbygoogle"
+       style="display:block"
+       data-ad-client="ca-pub-3954056972955412"
+       data-ad-slot="XXXXXXXXXX"
+       data-ad-format="banner"
+       data-full-width-responsive="true"></ins>
+  <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+</div>
+
+<!-- Overlay Rewarded Video (game over) -->
+<div id="ad-rewarded-overlay">
+  <div class="aro-title">💀 Game Over!<br>Vuoi rinascere?</div>
+  <div class="aro-sub">Guarda un breve video e ricevi<br>3 pezzi speciali per continuare</div>
+  <div class="aro-reward-preview">
+    <div class="aro-piece"><div class="aro-piece-icon">💣</div>Bomba</div>
+    <div class="aro-piece"><div class="aro-piece-icon">⚡</div>Fulmine</div>
+    <div class="aro-piece"><div class="aro-piece-icon">🍉🍉</div>Forma x2</div>
+  </div>
+  <div class="aro-ad-container">
+    <!-- Sostituisci data-ad-slot con il tuo Ad Slot ID rewarded/interstitial -->
+    <ins class="adsbygoogle"
+         style="display:block;width:100%;height:250px;"
+         data-ad-client="ca-pub-3954056972955412"
+         data-ad-slot="YYYYYYYYYY"
+         data-ad-format="fluid"></ins>
+    <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
+  </div>
+  <div id="aro-countdown"></div>
+  <div class="aro-skip-row">
+    <button id="aro-btn-watch">✅ Ricevi i pezzi!</button>
+    <button id="aro-btn-skip">✕ No grazie</button>
+  </div>
+</div>
+
 <div id="drag-ghost"><div class="sgrid" id="ghost-grid"></div></div>
 <div id="fscore"></div>
  
@@ -350,10 +481,10 @@ function saveRunStats(){
 function startGame(){
   GS=cfg.gs;
   grid=Array.from({length:GS},()=>Array(GS).fill(null));
-  frozen={}; score=0; combo=0; comboGrace=0; lines=0; mission=cfg.ms; sel=null; dragShape=null; activePowerup=null;
+  frozen={}; score=0; combo=0; comboGrace=0; lines=0; mission=cfg.ms; sel=null; dragShape=null; activePowerup=null; rewardedUsedThisGame=false;
   resetRunStats();
   loadObjState();
-
+ 
   // Carica moltiplicatore attivo
   activeMulti = parseInt(localStorage.getItem('fb_active_multi')||'1');
 
@@ -363,21 +494,17 @@ function startGame(){
   const p=$('diff-pill');
   p.textContent=cfg.lbl;
   p.style.cssText=`font-size:11px;font-weight:900;border-radius:10px;padding:0 11px;display:flex;align-items:center;border:1px solid ${cfg.col};color:${cfg.col};background:${cfg.col}22;`;
-
-  // Mostra banner moltiplicatore se attivo
-  let multBanner=$('multi-banner');
-  if(!multBanner){
-    multBanner=document.createElement('div'); multBanner.id='multi-banner';
-    multBanner.style.cssText='width:100%;text-align:center;font-family:Fredoka One,cursive;font-size:13px;color:var(--gold);background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.25);border-radius:10px;padding:5px 0;margin-bottom:2px;';
-    $('game-screen').insertBefore(multBanner, $('game-screen').children[1]);
-  }
-  if(activeMulti>1){
-    multBanner.textContent=`✖️${activeMulti} MOLTIPLICATORE ATTIVO`;
-    multBanner.style.display='block';
-  } else {
-    multBanner.style.display='none';
-  }
  
+  // Banner moltiplicatore attivo
+  let _mb=$('multi-banner');
+  if(!_mb){
+    _mb=document.createElement('div'); _mb.id='multi-banner';
+    _mb.style.cssText='width:100%;text-align:center;font-family:Fredoka One,cursive;font-size:12px;font-weight:900;color:var(--gold);background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.25);border-radius:10px;padding:4px 0;letter-spacing:.5px;';
+    const gs=$('game-screen'); gs.insertBefore(_mb, gs.querySelector('.g-info-row').nextSibling);
+  }
+  _mb.style.display = activeMulti>1 ? 'block' : 'none';
+  if(activeMulti>1) _mb.textContent = '✖️'+activeMulti+' MOLTIPLICATORE ATTIVO';
+
   updScore();
   $('best-score').textContent=getBest(diff).toLocaleString();
   updMission();
@@ -390,7 +517,7 @@ function startGame(){
   $('go-screen').style.display='none';
 }
  
-function animD(){ return SET.anim ? 180 : 0; }
+function animD(){ return SET.anim ? 160 : 0; }
 function getFruit(){
   if(!SET.fruit) return '■';
   const activeSet = getActiveEmojiSet();
@@ -581,7 +708,7 @@ function genShapes(){
   });
   renderGrid();
 }
- 
+
 function pickShape(i){
   if(shapes[i].used)return;
   shapes.forEach((s,j)=>{ if(s.el) s.el.classList.toggle('selected',j===i); });
@@ -1067,16 +1194,96 @@ function checkGO(){
   const ok=avail.some(s=>{for(let r=0;r<GS;r++)for(let c=0;c<GS;c++)if(canPlace(r,c,s))return true;return false;});
   if(!ok) setTimeout(triggerGO,600);
 }
+// ── Rewarded ad: quante volte è già stato usato in questa partita ──
+let rewardedUsedThisGame = false;
+
 function triggerGO(){
   saveRunStats();
-  // Applica moltiplicatore al punteggio finale e consumalo
+  // Mostra overlay rewarded SOLO se non già usato in questa partita
+  if(!rewardedUsedThisGame){
+    showRewardedOverlay();
+    return;
+  }
+  showRealGameOver();
+}
+
+function showRewardedOverlay(){
+  $('ad-rewarded-overlay').classList.add('visible');
+  // Countdown 5 secondi prima di abilitare il bottone "Ricevi i pezzi"
+  let secs = 5;
+  $('aro-btn-watch').disabled = true;
+  $('aro-btn-watch').style.opacity = '.45';
+  $('aro-countdown').textContent = `Il pulsante si sblocca tra ${secs}s...`;
+  const t = setInterval(()=>{
+    secs--;
+    if(secs <= 0){
+      clearInterval(t);
+      $('aro-btn-watch').disabled = false;
+      $('aro-btn-watch').style.opacity = '1';
+      $('aro-countdown').textContent = 'Puoi ritirare la ricompensa!';
+    } else {
+      $('aro-countdown').textContent = `Il pulsante si sblocca tra ${secs}s...`;
+    }
+  }, 1000);
+}
+
+function claimReward(){
+  rewardedUsedThisGame = true;
+  $('ad-rewarded-overlay').classList.remove('visible');
+
+  // ── Dai la ricompensa: bomba 1×1 + fulmine 1×1 + forma normale 2 celle ──
+  const rewardShapes = [
+    { cells:[[0,0]], fr:getFruit(), sp:'bomb',   used:false, el:null },
+    { cells:[[0,0]], fr:getFruit(), sp:'lightH',  used:false, el:null },
+    { cells:[[0,0],[1,0]], fr:getFruit(), sp:null, used:false, el:null },
+  ];
+
+  // Rimetti in gioco con le forme reward
+  grid=Array.from({length:GS},()=>Array(GS).fill(null));
+  frozen={}; combo=0; comboGrace=0; sel=null; dragShape=null; activePowerup=null;
+  loadGridTheme(); renderGrid();
+  loadInventory();
+
+  // Genera slot forme speciali
+  const area=$('shapes-area'); area.innerHTML=''; shapes=rewardShapes;
+  const slotW=Math.floor((Math.min(window.innerWidth,480)-24-7*2)/3);
+  const cs=Math.max(13,Math.floor(slotW/5.5)), fs=Math.max(9,cs-4);
+  shapes.forEach((s,i)=>{
+    const slot=document.createElement('div');
+    slot.className='shape-slot'; slot.dataset.idx=i;
+    if(s.sp){const b=document.createElement('div');b.className='sp-badge';b.textContent=SPEC[s.sp];slot.appendChild(b);}
+    const maxC=Math.max(...s.cells.map(cc=>cc[0]));
+    const maxR=Math.max(...s.cells.map(cc=>cc[1]));
+    const sg=document.createElement('div'); sg.className='sgrid';
+    sg.style.cssText=`display:grid;grid-template-columns:repeat(${maxC+1},${cs}px);gap:3px;`;
+    for(let r=0;r<=maxR;r++) for(let cc2=0;cc2<=maxC;cc2++){
+      const sc=document.createElement('div');
+      const has=s.cells.some(([c2,r2])=>c2===cc2&&r2===r);
+      sc.className='sc'+(has?'':' empty');
+      sc.style.cssText=`width:${cs}px;height:${cs}px;font-size:${fs}px;`;
+      if(has){sc.textContent=s.sp?SPEC[s.sp]:s.fr;sc.style.background=getBlockBg(s.fr,'.4');sc.style.borderRadius='4px';}
+      sg.appendChild(sc);
+    }
+    slot.appendChild(sg);
+    slot.addEventListener('touchstart',e=>{
+      if(s.used)return;
+      touchPendingIdx=i; touchPendingX=e.touches[0].clientX; touchPendingY=e.touches[0].clientY;
+    },{passive:true});
+    slot.addEventListener('click',()=>{ if(s.used||dragShape)return; pickShape(i); });
+    area.appendChild(slot); s.el=slot;
+  });
+
+  $('go-screen').style.display='none';
+  $('game-screen').style.display='flex';
+}
+
+function showRealGameOver(){
   const finalScore = activeMulti > 1 ? score * activeMulti : score;
   if(activeMulti > 1){
     setBest(diff, Math.max(getBest(diff), finalScore));
     localStorage.removeItem('fb_active_multi');
-    // Scala l'inventario del moltiplicatore usato
-    const MULTIPLIERS_IDS = [{id:'x2',mult:2},{id:'x3',mult:3},{id:'x5',mult:5},{id:'x10',mult:10}];
-    const used = MULTIPLIERS_IDS.find(m=>m.mult===activeMulti);
+    const MIDS = [{id:'x2',mult:2},{id:'x3',mult:3},{id:'x5',mult:5},{id:'x10',mult:10}];
+    const used = MIDS.find(m=>m.mult===activeMulti);
     if(used){ const n=parseInt(localStorage.getItem('fb_inv_multi_'+used.id)||'0'); if(n>0) localStorage.setItem('fb_inv_multi_'+used.id, n-1); }
     activeMulti = 1;
   }
@@ -1228,6 +1435,14 @@ $('go-menu-btn').addEventListener('click',()=>{ location.href='index.html'; });
 ['bomb','lh','lv','ice','hint'].forEach(k=>{
   const spMap={bomb:'bomb',lh:'lightH',lv:'lightV',ice:'ice',hint:'hint'};
   const btn=$('pu-'+k); if(btn) btn.addEventListener('click',()=>activatePowerup(spMap[k]));
+});
+
+// Rewarded overlay buttons
+$('aro-btn-watch').addEventListener('click', ()=>{ if(!$('aro-btn-watch').disabled) claimReward(); });
+$('aro-btn-skip').addEventListener('click', ()=>{
+  $('ad-rewarded-overlay').classList.remove('visible');
+  rewardedUsedThisGame = true;
+  showRealGameOver();
 });
 
 // Boot
