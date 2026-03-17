@@ -158,9 +158,12 @@ let activeDiff = sessionStorage.getItem('fb_diff')||'easy';
 function render(){
   const objs = OBJECTIVES[activeDiff];
   const state = getObjState(activeDiff);
-  const idx = Math.min(state.currentIdx, objs.length-1);
   const completed = new Set(state.completed||[]);
   const doneCount = completed.size;
+
+  // Derive current index from completed set (first non-completed), not stored idx which can desync
+  let idx = objs.findIndex(o => !completed.has(o.id));
+  if(idx === -1) idx = objs.length - 1; // all done
 
   document.querySelectorAll('.diff-tab').forEach(t=>{
     t.className='diff-tab'+(t.dataset.diff===activeDiff?' active-'+activeDiff:'');
@@ -170,8 +173,8 @@ function render(){
   $('ph-bar').style.width = Math.round(doneCount/objs.length*100)+'%';
 
   const cur = objs[idx];
-  const prog = getProgress(cur, activeDiff);
   const isDone = completed.has(cur.id);
+  const prog = isDone ? cur.target : getProgress(cur, activeDiff);
   $('cc-icon').textContent = cur.icon;
   $('cc-name').textContent = cur.name;
   $('cc-desc').textContent = cur.desc;
@@ -179,8 +182,10 @@ function render(){
   $('cc-prog-val').textContent = Math.min(prog,cur.target)+' / '+cur.target;
   $('cc-bar').style.width = Math.min(100,Math.round(prog/cur.target*100))+'%';
   $('cc-bar').style.background = isDone ? 'var(--green)' : '';
-  $('cc-note').textContent = isDone
-    ? '✅ Completato! Vai in partita per sbloccare il prossimo.'
+  $('cc-note').textContent = isDone && idx === objs.length-1
+    ? '🏆 Tutti gli obiettivi completati!'
+    : isDone
+    ? '✅ Completato!'
     : (idx+1 < objs.length ? `Obiettivo ${idx+1} di ${objs.length}` : 'Ultimo obiettivo!');
 
   const visibleEnd = idx + VISIBLE_AHEAD;
@@ -189,7 +194,7 @@ function render(){
 
   objs.forEach((o,i)=>{
     const done = completed.has(o.id);
-    const active = i === idx;
+    const active = i === idx && !done;
     const upcoming = !done && !active && i < visibleEnd;
     if(!done && !active && !upcoming) return;
 

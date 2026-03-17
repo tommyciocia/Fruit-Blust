@@ -1,5 +1,6 @@
 // ═══════════════════════════════════════════
 //  FruitBlast — Service Worker
+//  Strategia: cache-first → funziona 100% offline
 //  Il CACHE_VERSION viene aggiornato automaticamente
 //  dal GitHub Action ad ogni push su main/master.
 // ═══════════════════════════════════════════
@@ -14,13 +15,12 @@ const ASSETS = [
   './shop.html',
   './style.css',
   './data.js',
-  './foto_sfondo.png',
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
 ];
 
-// Install: scarica tutti i file freschi, NON cachare sw.js
+// Install: pre-cacha tutti gli asset subito
 self.addEventListener('install', e => {
   e.waitUntil(
     caches.open(CACHE_VERSION)
@@ -29,7 +29,7 @@ self.addEventListener('install', e => {
   );
 });
 
-// Activate: cancella tutte le vecchie cache
+// Activate: cancella vecchie cache e notifica i client
 self.addEventListener('activate', e => {
   e.waitUntil(
     caches.keys()
@@ -44,26 +44,48 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch: sw.js viene sempre preso dalla rete (mai da cache!)
-// Tutti gli altri asset: network-first, fallback cache
+// Fetch: CACHE-FIRST
+//  1. sw.js → sempre dalla rete (per rilevare aggiornamenti)
+//  2. Tutto il resto → cache prima, poi rete come fallback
+//     Se la rete risponde, aggiorna la cache in background
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
-  // Non cachare mai il service worker stesso
+  // sw.js sempre fresco dalla rete
   if (e.request.url.endsWith('sw.js')) {
-    e.respondWith(fetch(e.request));
+    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
     return;
   }
 
-  e.respondWith(
-    fetch(e.request)
-      .then(response => {
-        if (response && response.status === 200) {
-          const clone = response.clone();
-          caches.open(CACHE_VERSION).then(cache => cache.put(e.request, clone));
-        }
-        return response;
+  // Font Google: cache-first pura (non bloccare offline per font mancanti)
+  if (e.request.url.includes('fonts.googleapis.com') || e.request.url.includes('fonts.gstatic.com')) {
+    e.respondWith(
+      caches.match(e.request).then(cached => {
+        if (cached) return cached;
+        return fetch(e.request).then(resp => {
+          const clone = resp.clone();
+          caches.open(CACHE_VERSION).then(c => c.put(e.request, clone));
+          return resp;
+        }).catch(() => new Response('', { status: 408 }));
       })
-      .catch(() => caches.match(e.request))
+    );
+    return;
+  }
+
+  // App assets: cache-first, aggiorna in background
+  e.respondWith(
+    caches.match(e.request).then(cached => {
+      // Aggiorna cache in background se online
+      const fetchPromise = fetch(e.request).then(resp => {
+        if (resp && resp.status === 200) {
+          const clone = resp.clone();
+          caches.open(CACHE_VERSION).then(c => c.put(e.request, clone));
+        }
+        return resp;
+      }).catch(() => null);
+
+      // Restituisci subito dalla cache se disponibile, altrimenti aspetta la rete
+      return cached || fetchPromise;
+    })
   );
 });

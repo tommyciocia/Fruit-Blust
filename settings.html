@@ -70,15 +70,6 @@ if('serviceWorker' in navigator){
       <div class="sinfo"><div class="slabel">💣 Blocchi speciali</div><div class="ssub">Bomba, fulmini, ghiaccio</div></div>
       <button class="toggle" id="tog-special"></button>
     </div>
-    <div class="sep"></div>
-    <div class="srow">
-      <div class="sinfo"><div class="slabel">⚡ Velocità animazioni</div></div>
-      <div class="spd-btns">
-        <button class="spd-btn" data-speed="slow">Lenta</button>
-        <button class="spd-btn" data-speed="normal">Normale</button>
-        <button class="spd-btn" data-speed="fast">Veloce</button>
-      </div>
-    </div>
   </div>
  
   <div class="how-box">
@@ -117,14 +108,10 @@ function applyUI(){
   ['anim','fruit','special'].forEach(k=>{
     const t=$('tog-'+k); if(t) t.className='toggle'+(SET[k]?' on':'');
   });
-  document.querySelectorAll('.spd-btn').forEach(b=>b.classList.toggle('active',b.dataset.speed===SET.speed));
 }
  
 ['anim','fruit','special'].forEach(k=>{
   $('tog-'+k).addEventListener('click',()=>{ SET[k]=!SET[k]; applyUI(); saveSettings(SET); });
-});
-document.querySelectorAll('.spd-btn').forEach(b=>{
-  b.addEventListener('click',()=>{ SET.speed=b.dataset.speed; applyUI(); saveSettings(SET); });
 });
 $('reset-btn').addEventListener('click',()=>{
   if(!confirm('Sei sicuro? Verranno cancellati record, obiettivi e statistiche.')) return;

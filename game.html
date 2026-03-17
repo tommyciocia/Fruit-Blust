@@ -364,6 +364,7 @@ function startGame(){
   $('best-score').textContent=getBest(diff).toLocaleString();
   updMission();
   updObjMini();
+  loadGridTheme();
   renderGrid();
   genShapes();
  
@@ -371,7 +372,7 @@ function startGame(){
   $('go-screen').style.display='none';
 }
  
-function animD(){ return SET.anim?(SET.speed==='fast'?200:SET.speed==='slow'?680:420):50; }
+function animD(){ return SET.anim ? 180 : 0; }
 function getFruit(){
   if(!SET.fruit) return '■';
   const activeSet = getActiveEmojiSet();
@@ -398,6 +399,27 @@ function getBlockBg(fr, alpha){
   return 'rgba('+r+','+g+','+b+','+a+')';
 }
  
+// ════════════════════════════════════════
+//  GRID THEME (from shop)
+// ════════════════════════════════════════
+let _gridTheme = null;
+function loadGridTheme(){
+  try {
+    const raw = localStorage.getItem('fb_grid_theme_data');
+    _gridTheme = raw ? JSON.parse(raw) : null;
+  } catch(e){ _gridTheme = null; }
+  const wrap = $('grid-wrap');
+  if(_gridTheme){
+    wrap.style.background  = _gridTheme.bg;
+    wrap.style.borderColor = _gridTheme.border;
+  } else {
+    wrap.style.background  = 'rgba(255,255,255,.04)';
+    wrap.style.borderColor = 'rgba(255,255,255,.1)';
+  }
+}
+function getEmptyCellBg(){ return (_gridTheme&&_gridTheme.cellEmpty)?_gridTheme.cellEmpty:'rgba(255,255,255,.05)'; }
+function getEmptyCellBorder(){ return (_gridTheme&&_gridTheme.border)?_gridTheme.border:'rgba(255,255,255,.07)'; }
+
 // ════════════════════════════════════════
 //  GRID
 // ════════════════════════════════════════
@@ -426,7 +448,13 @@ function renderGrid(){
     el.className='cell'+(grid[r][c]?' filled':'');
     el.dataset.row=r; el.dataset.col=c;
     el.style.cssText=`width:${cs}px;height:${cs}px;font-size:${fs}px;`;
-    if(grid[r][c]){ el.textContent=grid[r][c]; el.style.background=getBlockBg(grid[r][c],'.42'); }
+    if(grid[r][c]){
+      el.textContent=grid[r][c];
+      el.style.background=getBlockBg(grid[r][c],'.42');
+    } else {
+      el.style.background=getEmptyCellBg();
+      el.style.borderColor=getEmptyCellBorder();
+    }
     if(frozen[r+','+c]) el.classList.add('frozen');
     g.appendChild(el);
   }
@@ -458,6 +486,14 @@ function thaw(){
   del.forEach(k=>delete frozen[k]);
 }
  
+function hasAnySolution(shapeList){
+  return shapeList.some(s=>{
+    if(s.used||s.sp) return true; // specials always count as placeable
+    for(let r=0;r<GS;r++) for(let c=0;c<GS;c++) if(canPlace(r,c,s)) return true;
+    return false;
+  });
+}
+
 function genShapes(){
   thaw();
   const area=$('shapes-area'); area.innerHTML=''; shapes=[];
@@ -467,7 +503,6 @@ function genShapes(){
     const fr=getFruit();
     let sp=null;
     if(SET.special && !specialUsed && Math.random()<cfg.sc){
-      // Weighted special per difficulty — ice drastically reduced on hard
       const w = diff==='hard'
         ? [{sp:'bomb',v:35},{sp:'lightH',v:33},{sp:'lightV',v:27},{sp:'ice',v:5}]
         : diff==='medium'
@@ -479,6 +514,25 @@ function genShapes(){
     }
     shapes.push({cells:[...base.c],fr,sp,used:false,el:null});
   }
+
+  // ── Garanzia soluzione: almeno 1 forma deve entrare nella griglia ──
+  let attempts=0;
+  while(!hasAnySolution(shapes) && attempts<40){
+    attempts++;
+    let worstIdx=-1, worstSize=-1;
+    shapes.forEach((s,i)=>{ if(!s.sp && s.cells.length>worstSize){ worstSize=s.cells.length; worstIdx=i; } });
+    if(worstIdx===-1) break;
+    const smallPool = diff==='hard' ? [...S_SMALL,...S_MED] : [...S_TINY,...S_SMALL];
+    const base = smallPool[Math.floor(Math.random()*smallPool.length)];
+    shapes[worstIdx] = {cells:[...base.c], fr:getFruit(), sp:null, used:false, el:null};
+  }
+  // Fallback estremo: forza un 1×1 se la griglia è quasi piena
+  if(!hasAnySolution(shapes)){
+    for(let i=0;i<shapes.length;i++){
+      if(!shapes[i].sp){ shapes[i]={cells:[[0,0]],fr:getFruit(),sp:null,used:false,el:null}; break; }
+    }
+  }
+
   const slotW=Math.floor((Math.min(window.innerWidth,480)-24-7*2)/3);
   const cs=Math.max(13,Math.floor(slotW/5.5)), fs=Math.max(9,cs-4);
   shapes.forEach((s,i)=>{
@@ -500,8 +554,6 @@ function genShapes(){
     slot.appendChild(sg);
     slot.addEventListener('touchstart',e=>{
       if(s.used)return;
-      // NON fare preventDefault qui — lascia che il documento gestisca
-      // Segna solo quale shape stiamo per trascinare
       touchPendingIdx=i;
       touchPendingX=e.touches[0].clientX;
       touchPendingY=e.touches[0].clientY;
@@ -878,12 +930,11 @@ function doPlace(row,col){
   sel=null; dragShape=null; clearHL(); hideGhost();
   // Decrement frozen timers
   Object.keys(frozen).forEach(k=>{frozen[k]--;if(frozen[k]<=0)delete frozen[k];});
- 
-  setTimeout(()=>{
-    checkLines(); renderGrid(); updScore();
-    if(shapes.every(s=>s.used)){ trackStat('turns',1); setTimeout(genShapes,320); }
-    else checkGO();
-  }, animD());
+
+  // Instant: check lines and re-render immediately, no lag
+  checkLines(); renderGrid(); updScore();
+  if(shapes.every(s=>s.used)){ trackStat('turns',1); setTimeout(genShapes, SET.anim ? 260 : 0); }
+  else checkGO();
 }
  
 // ════════════════════════════════════════
@@ -948,7 +999,12 @@ function checkLines(){
     showFloat(`+${ls}`,Math.floor(GS/2),Math.floor(GS/2)+1);
   }
   updGraceUI();
-  setTimeout(()=>{document.querySelectorAll('.cell.clearing').forEach(e=>e.classList.remove('clearing'));renderGrid();},animD());
+  if(SET.anim){
+    setTimeout(()=>{document.querySelectorAll('.cell.clearing').forEach(e=>e.classList.remove('clearing'));renderGrid();}, 180);
+  } else {
+    document.querySelectorAll('.cell.clearing').forEach(e=>e.classList.remove('clearing'));
+    renderGrid();
+  }
 }
  
 // ════════════════════════════════════════
