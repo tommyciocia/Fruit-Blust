@@ -242,6 +242,7 @@ let SET    = getSettings();
  
 // ── game state ──
 let GS, grid, score, shapes, sel, combo, comboGrace, lines, mission, frozen;
+let activeMulti = 1;
 let dragShape=null, dragAnchorR=0, dragAnchorC=0, dragPreviewR=-1, dragPreviewC=-1;
 let mouseDown=false;
 let touchPendingIdx=-1, touchPendingX=0, touchPendingY=0;
@@ -352,13 +353,30 @@ function startGame(){
   frozen={}; score=0; combo=0; comboGrace=0; lines=0; mission=cfg.ms; sel=null; dragShape=null; activePowerup=null;
   resetRunStats();
   loadObjState();
- 
+
+  // Carica moltiplicatore attivo
+  activeMulti = parseInt(localStorage.getItem('fb_active_multi')||'1');
+
   // Load purchased inventory
   loadInventory();
  
   const p=$('diff-pill');
   p.textContent=cfg.lbl;
   p.style.cssText=`font-size:11px;font-weight:900;border-radius:10px;padding:0 11px;display:flex;align-items:center;border:1px solid ${cfg.col};color:${cfg.col};background:${cfg.col}22;`;
+
+  // Mostra banner moltiplicatore se attivo
+  let multBanner=$('multi-banner');
+  if(!multBanner){
+    multBanner=document.createElement('div'); multBanner.id='multi-banner';
+    multBanner.style.cssText='width:100%;text-align:center;font-family:Fredoka One,cursive;font-size:13px;color:var(--gold);background:rgba(255,215,0,.1);border:1px solid rgba(255,215,0,.25);border-radius:10px;padding:5px 0;margin-bottom:2px;';
+    $('game-screen').insertBefore(multBanner, $('game-screen').children[1]);
+  }
+  if(activeMulti>1){
+    multBanner.textContent=`✖️${activeMulti} MOLTIPLICATORE ATTIVO`;
+    multBanner.style.display='block';
+  } else {
+    multBanner.style.display='none';
+  }
  
   updScore();
   $('best-score').textContent=getBest(diff).toLocaleString();
@@ -1011,9 +1029,10 @@ function checkLines(){
 //  SCORE / MISSION
 // ════════════════════════════════════════
 function updScore(){
-  $('score').textContent=score.toLocaleString();
+  const displayed = activeMulti > 1 ? score * activeMulti : score;
+  $('score').textContent = displayed.toLocaleString();
   const b=getBest(diff);
-  if(score>b){setBest(diff,score);$('best-score').textContent=score.toLocaleString();}
+  if(displayed>b){setBest(diff,displayed);$('best-score').textContent=displayed.toLocaleString();}
   // track score objective
   if(activeObj&&activeObj.type==='score') checkObjProgress();
   else updObjMini();
@@ -1050,12 +1069,23 @@ function checkGO(){
 }
 function triggerGO(){
   saveRunStats();
+  // Applica moltiplicatore al punteggio finale e consumalo
+  const finalScore = activeMulti > 1 ? score * activeMulti : score;
+  if(activeMulti > 1){
+    setBest(diff, Math.max(getBest(diff), finalScore));
+    localStorage.removeItem('fb_active_multi');
+    // Scala l'inventario del moltiplicatore usato
+    const MULTIPLIERS_IDS = [{id:'x2',mult:2},{id:'x3',mult:3},{id:'x5',mult:5},{id:'x10',mult:10}];
+    const used = MULTIPLIERS_IDS.find(m=>m.mult===activeMulti);
+    if(used){ const n=parseInt(localStorage.getItem('fb_inv_multi_'+used.id)||'0'); if(n>0) localStorage.setItem('fb_inv_multi_'+used.id, n-1); }
+    activeMulti = 1;
+  }
   const best=getBest(diff);
-  $('go-final').textContent=score.toLocaleString();
+  $('go-final').textContent=finalScore.toLocaleString();
   const gd=$('go-diff-v'); gd.textContent=cfg.lbl; gd.style.color=cfg.col;
   $('go-best-v').textContent=best.toLocaleString();
   $('go-lines-v').textContent=lines;
-  $('go-new-rec').style.display=(score>=best&&score>0)?'block':'none';
+  $('go-new-rec').style.display=(finalScore>=best&&finalScore>0)?'block':'none';
   $('game-screen').style.display='none';
   $('go-screen').style.display='flex';
   $('go-screen').classList.add('fade-in');

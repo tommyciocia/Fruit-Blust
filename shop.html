@@ -473,16 +473,18 @@ function renderMulti(){
   if(activeMult>1){
     panel.innerHTML+=`<div style="background:linear-gradient(135deg,rgba(255,215,0,.18),rgba(255,150,0,.1));border:2px solid rgba(255,215,0,.45);border-radius:14px;padding:12px 14px;text-align:center;margin-bottom:4px;">
       <div style="font-family:Fredoka One,cursive;font-size:22px;color:var(--gold);">✖️${activeMult} ATTIVO</div>
-      <div style="font-size:11px;color:rgba(255,215,0,.7);margin-top:3px;">Moltiplicatore attivo per questa partita</div>
+      <div style="font-size:11px;color:rgba(255,215,0,.7);margin-top:3px;">Verrà usato alla prossima partita · si consuma automaticamente</div>
+      <button onclick="localStorage.removeItem('fb_active_multi');renderMulti();" style="margin-top:8px;background:rgba(231,76,60,.18);border:1px solid rgba(231,76,60,.4);color:#e74c3c;border-radius:8px;padding:5px 14px;font-size:12px;font-weight:900;font-family:Nunito,sans-serif;cursor:pointer;">✕ Disattiva</button>
     </div>`;
   }
 
   MULTIPLIERS.forEach(m=>{
     const owned=getInvMulti(m.id);
+    const isActive = activeMult === m.mult && activeMult > 1;
     const canAfford=credits>=m.price;
     const card=document.createElement('div');
-    card.className='item-card';
-    card.style.cssText=`border-color:${m.border};background:${m.color};`;
+    card.className='item-card'+(isActive?' active-card':'');
+    card.style.cssText=`border-color:${isActive?'var(--gold)':m.border};background:${m.color};`;
 
     card.innerHTML=`
       <div class="ic-head" style="margin-bottom:6px;">
@@ -497,11 +499,23 @@ function renderMulti(){
       <div class="ic-footer">
         <div class="ic-price">${m.price.toLocaleString()} 💎 <span style="font-size:10px;color:rgba(255,255,255,.4);">/ pezzo</span></div>
         <div style="display:flex;gap:6px;">
+          ${owned>0 && !isActive ? `<button class="btn-equip" data-activate="${m.id}" data-mult="${m.mult}">▶ Attiva</button>` : ''}
+          ${isActive ? `<div class="btn-active">✦ Attivo</div>` : ''}
           <button class="btn-buy-pu" data-mid="${m.id}" data-qty="1" ${canAfford?'':'disabled'}>+1</button>
           <button class="btn-buy-pu btn-buy-5" data-mid="${m.id}" data-qty="3" ${credits>=m.price*3?'':'disabled'}>+3</button>
         </div>
       </div>`;
     panel.appendChild(card);
+  });
+
+  // Attiva
+  panel.querySelectorAll('.btn-equip[data-activate]').forEach(btn=>{
+    btn.addEventListener('click',()=>{
+      const m=MULTIPLIERS.find(x=>x.id===btn.dataset.activate); if(!m)return;
+      localStorage.setItem('fb_active_multi', m.mult);
+      showToast(`✖️${m.mult} attivato! Verrà usato alla prossima partita.`);
+      renderMulti();
+    });
   });
 
   panel.querySelectorAll('.btn-buy-pu:not(:disabled)').forEach(btn=>{
