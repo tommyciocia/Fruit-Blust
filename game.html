@@ -149,7 +149,7 @@
 }
 /* Spazio sotto il gioco per non coprire le forme */
 #game-screen{ padding-bottom:calc(var(--sab) + 66px) !important; }
-
+ 
 /* Overlay rewarded video */
 #ad-rewarded-overlay{
   display:none;
@@ -208,7 +208,7 @@
   font-size:11px;color:rgba(255,255,255,.35);
   text-align:center;min-height:16px;
 }
-
+ 
 /* Game over */
 #go-screen{gap:14px;padding-top:calc(var(--sat) + 8px);padding-bottom:calc(var(--sab) + 12px);text-align:center;justify-content:center;min-height:100vh;min-height:100dvh;}
 .go-emoji{font-size:clamp(54px,15vw,70px);animation:gbounce .5s cubic-bezier(.34,1.56,.64,1);}
@@ -320,7 +320,7 @@ if('serviceWorker' in navigator && location.protocol !== 'file:'){
 </div>
  
 </div><!-- #app -->
-
+ 
 <!-- Banner AdSense fisso in fondo -->
 <div id="ad-banner-wrap">
   <!-- Sostituisci data-ad-slot con il tuo Ad Slot ID banner 320x50 o Responsive -->
@@ -332,7 +332,7 @@ if('serviceWorker' in navigator && location.protocol !== 'file:'){
        data-full-width-responsive="true"></ins>
   <script>(adsbygoogle = window.adsbygoogle || []).push({});</script>
 </div>
-
+ 
 <!-- Overlay Rewarded Video (game over) -->
 <div id="ad-rewarded-overlay">
   <div class="aro-title">💀 Game Over!<br>Vuoi rinascere?</div>
@@ -357,7 +357,7 @@ if('serviceWorker' in navigator && location.protocol !== 'file:'){
     <button id="aro-btn-skip">✕ No grazie</button>
   </div>
 </div>
-
+ 
 <div id="drag-ghost"><div class="sgrid" id="ghost-grid"></div></div>
 <div id="fscore"></div>
  
@@ -466,11 +466,11 @@ function saveRunStats(){
   let stored={};
   try{ const r=localStorage.getItem('fb_stats_'+diff); if(r) stored=JSON.parse(r); }catch(e){}
   const merged={};
-
+ 
   // Legge cum:true dal data.js per sapere quali stat sommare vs max
   const cumTypes = new Set();
   (OBJECTIVES[diff]||[]).forEach(o=>{ if(o.cum) cumTypes.add(o.type); });
-
+ 
   const keys=['lines','score','combo','useBomb','useLH','useLV','useIce','placed','bigShape','multiLine','turns'];
   keys.forEach(k=>{
     const cur = k==='score' ? score : (runStats[k]||0);
@@ -493,7 +493,7 @@ function startGame(){
  
   // Carica moltiplicatore attivo
   activeMulti = parseInt(localStorage.getItem('fb_active_multi')||'1');
-
+ 
   // Load purchased inventory
   loadInventory();
  
@@ -510,7 +510,7 @@ function startGame(){
   }
   _mb.style.display = activeMulti>1 ? 'block' : 'none';
   if(activeMulti>1) _mb.textContent = '✖️'+activeMulti+' MOLTIPLICATORE ATTIVO';
-
+ 
   updScore();
   $('best-score').textContent=getBest(diff).toLocaleString();
   updMission();
@@ -570,7 +570,7 @@ function loadGridTheme(){
 }
 function getEmptyCellBg(){ return (_gridTheme&&_gridTheme.cellEmpty)?_gridTheme.cellEmpty:'rgba(255,255,255,.05)'; }
 function getEmptyCellBorder(){ return (_gridTheme&&_gridTheme.border)?_gridTheme.border:'rgba(255,255,255,.07)'; }
-
+ 
 // ════════════════════════════════════════
 //  GRID
 // ════════════════════════════════════════
@@ -644,7 +644,7 @@ function hasAnySolution(shapeList){
     return false;
   });
 }
-
+ 
 function genShapes(){
   thaw();
   const area=$('shapes-area'); area.innerHTML=''; shapes=[];
@@ -665,7 +665,7 @@ function genShapes(){
     }
     shapes.push({cells:[...base.c],fr,sp,used:false,el:null});
   }
-
+ 
   // ── Garanzia soluzione: almeno 1 forma deve entrare nella griglia ──
   let attempts=0;
   while(!hasAnySolution(shapes) && attempts<40){
@@ -683,7 +683,7 @@ function genShapes(){
       if(!shapes[i].sp){ shapes[i]={cells:[[0,0]],fr:getFruit(),sp:null,used:false,el:null}; break; }
     }
   }
-
+ 
   const slotW=Math.floor((Math.min(window.innerWidth,480)-24-7*2)/3);
   const cs=Math.max(13,Math.floor(slotW/5.5)), fs=Math.max(9,cs-4);
   shapes.forEach((s,i)=>{
@@ -714,7 +714,7 @@ function genShapes(){
   });
   renderGrid();
 }
-
+ 
 function pickShape(i){
   if(shapes[i].used)return;
   shapes.forEach((s,j)=>{ if(s.el) s.el.classList.toggle('selected',j===i); });
@@ -1081,7 +1081,7 @@ function doPlace(row,col){
   sel=null; dragShape=null; clearHL(); hideGhost();
   // Decrement frozen timers
   Object.keys(frozen).forEach(k=>{frozen[k]--;if(frozen[k]<=0)delete frozen[k];});
-
+ 
   // Instant: check lines and re-render immediately, no lag
   checkLines(); renderGrid(); updScore();
   if(shapes.every(s=>s.used)){ trackStat('turns',1); setTimeout(genShapes, SET.anim ? 260 : 0); }
@@ -1128,7 +1128,7 @@ function checkLines(){
     }
     return;
   }
-
+ 
   combo++; comboGrace=0;
   let ls=0;
   toC.forEach(({t,i})=>{
@@ -1202,7 +1202,7 @@ function checkGO(){
 }
 // ── Rewarded ad: quante volte è già stato usato in questa partita ──
 let rewardedUsedThisGame = false;
-
+ 
 function triggerGO(){
   saveRunStats();
   // Mostra overlay rewarded SOLO se non già usato in questa partita
@@ -1212,7 +1212,7 @@ function triggerGO(){
   }
   showRealGameOver();
 }
-
+ 
 function showRewardedOverlay(){
   $('ad-rewarded-overlay').classList.add('visible');
   // Countdown 5 secondi prima di abilitare il bottone "Ricevi i pezzi"
@@ -1232,24 +1232,23 @@ function showRewardedOverlay(){
     }
   }, 1000);
 }
-
+ 
 function claimReward(){
   rewardedUsedThisGame = true;
   $('ad-rewarded-overlay').classList.remove('visible');
-
+ 
   // ── Dai la ricompensa: bomba 1×1 + fulmine 1×1 + forma normale 2 celle ──
   const rewardShapes = [
     { cells:[[0,0]], fr:getFruit(), sp:'bomb',   used:false, el:null },
     { cells:[[0,0]], fr:getFruit(), sp:'lightH',  used:false, el:null },
     { cells:[[0,0],[1,0]], fr:getFruit(), sp:null, used:false, el:null },
   ];
-
-  // Rimetti in gioco con le forme reward
-  grid=Array.from({length:GS},()=>Array(GS).fill(null));
+ 
+  // Rimetti in gioco con le forme reward (griglia invariata)
   frozen={}; combo=0; comboGrace=0; sel=null; dragShape=null; activePowerup=null;
   loadGridTheme(); renderGrid();
   loadInventory();
-
+ 
   // Genera slot forme speciali
   const area=$('shapes-area'); area.innerHTML=''; shapes=rewardShapes;
   const slotW=Math.floor((Math.min(window.innerWidth,480)-24-7*2)/3);
@@ -1278,11 +1277,11 @@ function claimReward(){
     slot.addEventListener('click',()=>{ if(s.used||dragShape)return; pickShape(i); });
     area.appendChild(slot); s.el=slot;
   });
-
+ 
   $('go-screen').style.display='none';
   $('game-screen').style.display='flex';
 }
-
+ 
 function showRealGameOver(){
   const finalScore = activeMulti > 1 ? score * activeMulti : score;
   if(activeMulti > 1){
@@ -1310,9 +1309,9 @@ function showRealGameOver(){
 function getInv(k){ return parseInt(localStorage.getItem('fb_inv_'+k)||'0'); }
 function setInv(k,n){ localStorage.setItem('fb_inv_'+k,Math.max(0,n)); }
 function useInv(k){ const n=getInv(k); if(n<=0)return false; setInv(k,n-1); return true; }
-
+ 
 let activePowerup=null;
-
+ 
 function loadInventory(){
   $('stat-bomb').textContent=getInv('bomb');
   $('stat-lh').textContent=getInv('lh');
@@ -1321,7 +1320,7 @@ function loadInventory(){
   $('stat-hint').textContent=getInv('hint');
   updPuUI();
 }
-
+ 
 function updPuUI(){
   const map={bomb:'bomb',lh:'lh',lv:'lv',ice:'ice',hint:'hint'};
   const spMap={bomb:'bomb',lh:'lightH',lv:'lightV',ice:'ice',hint:'hint'};
@@ -1333,7 +1332,7 @@ function updPuUI(){
     btn.classList.toggle('active-pu',isActive);
   });
 }
-
+ 
 function activatePowerup(sp){
   // sp: 'bomb','lightH','lightV','ice','hint'
   const invKey=sp==='lightH'?'lh':sp==='lightV'?'lv':sp==='bomb'?'bomb':sp==='ice'?'ice':'hint';
@@ -1347,7 +1346,7 @@ function activatePowerup(sp){
   const msgs={bomb:'💣 Tocca una cella — esploderà 5×5!',lightH:'⚡ Tocca una cella — elimina tutta la riga!',lightV:'🌩️ Tocca una cella — elimina tutta la colonna!',ice:'❄️ Tocca una cella — congela zona attorno!'};
   showPuToast(msgs[sp]||'');
 }
-
+ 
 function usePowerupAt(row,col){
   const sp=activePowerup; if(!sp||sp==='hint') return false;
   const invKey=sp==='lightH'?'lh':sp==='lightV'?'lv':sp==='bomb'?'bomb':'ice';
@@ -1383,7 +1382,7 @@ function usePowerupAt(row,col){
   setTimeout(()=>{ checkLines(); renderGrid(); updScore(); checkGO(); },animD());
   return true;
 }
-
+ 
 function showPuToast(msg){
   let el=$('pu-toast');
   if(!el){
@@ -1395,7 +1394,7 @@ function showPuToast(msg){
   clearTimeout(showPuToast._t);
   showPuToast._t=setTimeout(()=>{ el.style.opacity='0'; el.style.transform='translateX(-50%) translateY(12px)'; },2500);
 }
-
+ 
 // Hint system
 let hintActive=false;
 function clearHint(){ document.querySelectorAll('.cell.hint-shape').forEach(e=>e.classList.remove('hint-shape')); hintActive=false; }
@@ -1428,7 +1427,7 @@ function showHint(){
   hintActive=true;
   clearTimeout(showHint._t); showHint._t=setTimeout(()=>clearHint(),3000);
 }
-
+ 
 // ════════════════════════════════════════
 //  EVENTS
 // ════════════════════════════════════════
@@ -1442,7 +1441,7 @@ $('go-menu-btn').addEventListener('click',()=>{ location.href='index.html'; });
   const spMap={bomb:'bomb',lh:'lightH',lv:'lightV',ice:'ice',hint:'hint'};
   const btn=$('pu-'+k); if(btn) btn.addEventListener('click',()=>activatePowerup(spMap[k]));
 });
-
+ 
 // Rewarded overlay buttons
 $('aro-btn-watch').addEventListener('click', ()=>{ if(!$('aro-btn-watch').disabled) claimReward(); });
 $('aro-btn-skip').addEventListener('click', ()=>{
@@ -1450,7 +1449,7 @@ $('aro-btn-skip').addEventListener('click', ()=>{
   rewardedUsedThisGame = true;
   showRealGameOver();
 });
-
+ 
 // Boot
 startGame();
 </script>
