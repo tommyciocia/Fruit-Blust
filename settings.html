@@ -28,7 +28,7 @@
 </style>
  
 <script>
-if('serviceWorker' in navigator){
+if('serviceWorker' in navigator && location.protocol !== 'file:'){
   navigator.serviceWorker.register('./sw.js').then(reg => {
     reg.update();
     reg.addEventListener('updatefound', () => {
@@ -122,6 +122,7 @@ $('reset-btn').addEventListener('click',()=>{
     localStorage.removeItem('fb_best_'+d);
     localStorage.removeItem('fb_obj_'+d);
     localStorage.removeItem('fb_stats_'+d);
+    localStorage.removeItem('fb_stats_run_'+d);
   });
   localStorage.removeItem('fb_bonus');
   localStorage.removeItem('fb_owned_sets');
