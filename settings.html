@@ -2,6 +2,14 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZK7DJ4ZJ29"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "G-ZK7DJ4ZJ29");
+</script>
 <meta name="google-adsense-account" content="ca-pub-3954056972955412">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -28,7 +36,7 @@
 </style>
  
 <script>
-if('serviceWorker' in navigator && location.protocol !== 'file:'){
+if('serviceWorker' in navigator){
   navigator.serviceWorker.register('./sw.js').then(reg => {
     reg.update();
     reg.addEventListener('updatefound', () => {
@@ -122,7 +130,6 @@ $('reset-btn').addEventListener('click',()=>{
     localStorage.removeItem('fb_best_'+d);
     localStorage.removeItem('fb_obj_'+d);
     localStorage.removeItem('fb_stats_'+d);
-    localStorage.removeItem('fb_stats_run_'+d);
   });
   localStorage.removeItem('fb_bonus');
   localStorage.removeItem('fb_owned_sets');

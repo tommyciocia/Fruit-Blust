@@ -2,6 +2,14 @@
 <html lang="it">
 <head>
 <meta charset="UTF-8">
+<!-- Google Analytics -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-ZK7DJ4ZJ29"></script>
+<script>
+  window.dataLayer = window.dataLayer || [];
+  function gtag(){dataLayer.push(arguments);}
+  gtag("js", new Date());
+  gtag("config", "G-ZK7DJ4ZJ29");
+</script>
 <meta name="google-adsense-account" content="ca-pub-3954056972955412">
 <link rel="icon" type="image/png" href="icon-192.png">
 <link rel="apple-touch-icon" href="icon-192.png">
@@ -472,17 +480,13 @@ function saveRunStats(){
   (OBJECTIVES[diff]||[]).forEach(o=>{ if(o.cum) cumTypes.add(o.type); });
  
   const keys=['lines','score','combo','useBomb','useLH','useLV','useIce','placed','bigShape','multiLine','turns'];
-  const lastRun={};
   keys.forEach(k=>{
     const cur = k==='score' ? score : (runStats[k]||0);
-    lastRun[k] = cur;
     merged[k] = cumTypes.has(k)
       ? (stored[k]||0) + cur          // cumulativo: somma
-      : Math.max(stored[k]||0, cur);  // singola partita: massimo storico
+      : Math.max(stored[k]||0, cur);  // singola partita: massimo
   });
   localStorage.setItem('fb_stats_'+diff, JSON.stringify(merged));
-  // Salva anche i valori dell'ULTIMA partita (per mostrare progresso corretto sugli obiettivi non-cumulativi)
-  localStorage.setItem('fb_stats_run_'+diff, JSON.stringify(lastRun));
 }
  
 // ════════════════════════════════════════
@@ -493,8 +497,6 @@ function startGame(){
   grid=Array.from({length:GS},()=>Array(GS).fill(null));
   frozen={}; score=0; combo=0; comboGrace=0; lines=0; mission=cfg.ms; sel=null; dragShape=null; activePowerup=null; rewardedUsedThisGame=false;
   resetRunStats();
-  // Azzera i dati dell'ultimo run così gli obiettivi mostrano 0 a inizio partita
-  localStorage.removeItem('fb_stats_run_'+diff);
   loadObjState();
  
   // Carica moltiplicatore attivo
