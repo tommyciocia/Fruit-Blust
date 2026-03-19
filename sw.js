@@ -18,6 +18,7 @@ const ASSETS = [
   './manifest.json',
   './icon-192.png',
   './icon-512.png',
+  './fruitblast_icon.svg',
 ];
 
 // Install: pre-cacha tutti gli asset subito
@@ -44,38 +45,25 @@ self.addEventListener('activate', e => {
   );
 });
 
-// Fetch: CACHE-FIRST
-//  1. sw.js → sempre dalla rete (per rilevare aggiornamenti)
-//  2. Tutto il resto → cache prima, poi rete come fallback
-//     Se la rete risponde, aggiorna la cache in background
+// Fetch: CACHE-FIRST per tutto
+// Offline = sempre dalla cache. Online = cache subito + aggiorna in background.
 self.addEventListener('fetch', e => {
   if (e.request.method !== 'GET') return;
 
-  // sw.js sempre fresco dalla rete
-  if (e.request.url.endsWith('sw.js')) {
-    e.respondWith(fetch(e.request).catch(() => caches.match(e.request)));
-    return;
-  }
+  const url = new URL(e.request.url);
+  const isLocal = url.origin === self.location.origin;
 
-  // Font Google: cache-first pura (non bloccare offline per font mancanti)
-  if (e.request.url.includes('fonts.googleapis.com') || e.request.url.includes('fonts.gstatic.com')) {
+  // Richieste esterne (AdSense, Analytics, ecc.) — rete con fallback silenzioso
+  if (!isLocal) {
     e.respondWith(
-      caches.match(e.request).then(cached => {
-        if (cached) return cached;
-        return fetch(e.request).then(resp => {
-          const clone = resp.clone();
-          caches.open(CACHE_VERSION).then(c => c.put(e.request, clone));
-          return resp;
-        }).catch(() => new Response('', { status: 408 }));
-      })
+      fetch(e.request).catch(() => new Response('', { status: 503 }))
     );
     return;
   }
 
-  // App assets: cache-first, aggiorna in background
+  // Tutti gli asset locali (incluso sw.js): cache-first, aggiorna in background
   e.respondWith(
     caches.match(e.request).then(cached => {
-      // Aggiorna cache in background se online
       const fetchPromise = fetch(e.request).then(resp => {
         if (resp && resp.status === 200) {
           const clone = resp.clone();
@@ -84,7 +72,8 @@ self.addEventListener('fetch', e => {
         return resp;
       }).catch(() => null);
 
-      // Restituisci subito dalla cache se disponibile, altrimenti aspetta la rete
+      // Cache disponibile → rispondi subito, aggiorna in background
+      // Cache non disponibile → aspetta la rete
       return cached || fetchPromise;
     })
   );
