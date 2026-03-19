@@ -256,7 +256,8 @@
  
  
  
-.cell.line-ready{background:rgba(255,220,30,.28) !important;border-color:rgba(255,210,0,.75) !important;box-shadow:0 0 8px rgba(255,210,0,.3) !important;transition:background .08s,border-color .08s;}
+.cell.line-ready{background:rgba(255,180,0,.35) !important;border-color:rgba(255,190,0,.9) !important;box-shadow:0 0 10px rgba(255,180,0,.45), inset 0 0 6px rgba(255,200,0,.2) !important;transition:background .08s,border-color .08s;animation:lineReadyPulse .6s ease-in-out infinite alternate;}
+@keyframes lineReadyPulse{from{box-shadow:0 0 6px rgba(255,180,0,.3)}to{box-shadow:0 0 16px rgba(255,200,0,.7), inset 0 0 8px rgba(255,200,0,.3)}}
 .cell.line-complete{background:rgba(80,255,140,.38) !important;border-color:rgba(60,255,130,.9) !important;box-shadow:inset 0 0 10px rgba(80,255,140,.4), 0 0 12px rgba(80,255,140,.3) !important;transition:background .08s,border-color .08s;z-index:1;}
 .cell.bomb-zone{background:rgba(255,80,80,.2);border-color:rgba(255,100,80,.55);transition:background .08s;}
 .cell.hint-shape{background:rgba(100,200,255,.22)!important;border-color:rgba(80,180,255,.7)!important;
@@ -1043,13 +1044,13 @@ function previewAt(row,col){
     if(completedRows.has(r)) continue;
     let filled=0;
     for(let c=0;c<GS;c++) if(grid[r][c]||placedSet.has(r+','+c)) filled++;
-    if(filled>=GS-1){ for(let c=0;c<GS;c++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el&&!el.classList.contains('highlight'))el.classList.add('line-ready');} }
+    if(filled>=GS-1){ for(let c=0;c<GS;c++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add('line-ready');} }
   }
   for(let c=0;c<GS;c++){
     if(completedCols.has(c)) continue;
     let filled=0;
     for(let r=0;r<GS;r++) if(grid[r][c]||placedSet.has(r+','+c)) filled++;
-    if(filled>=GS-1){ for(let r=0;r<GS;r++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el&&!el.classList.contains('highlight'))el.classList.add('line-ready');} }
+    if(filled>=GS-1){ for(let r=0;r<GS;r++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el)el.classList.add('line-ready');} }
   }
   completedRows.forEach(r=>{ for(let c=0;c<GS;c++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el){el.classList.remove('highlight','line-ready');el.classList.add('line-complete');}} });
   completedCols.forEach(c=>{ for(let r=0;r<GS;r++){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${c}"]`);if(el){el.classList.remove('highlight','line-ready');el.classList.add('line-complete');}} });
