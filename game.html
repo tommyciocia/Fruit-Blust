@@ -98,13 +98,22 @@
   position:relative;overflow:hidden;
   transition:background .06s,border-color .06s;}
 .cell.filled{background:rgba(255,255,255,.1);}
-.cell.highlight{background:rgba(255,255,200,.22);border-color:rgba(255,255,80,.55);
+.cell.highlight{
+  background:rgba(255,230,30,.38) !important;
+  border-color:rgba(255,220,0,.85) !important;
+  box-shadow:0 0 10px rgba(255,220,0,.5), inset 0 0 8px rgba(255,220,0,.25) !important;
   transform:scale(1.07);z-index:2;transition:background .06s,transform .06s;}
-.cell.invalid{background:rgba(255,50,50,.18);border-color:rgba(255,100,100,.44);}
-.cell.clearing{animation:pop .4s cubic-bezier(.36,.07,.19,.97) forwards;}
-@keyframes pop{0%{transform:scale(1);opacity:1}35%{transform:scale(1.28);opacity:.8}100%{transform:scale(0) rotate(12deg);opacity:0}}
-.cell.just-placed{animation:land .17s cubic-bezier(.34,1.56,.64,1);}
-@keyframes land{from{transform:scale(.65)}to{transform:scale(1)}}
+.cell.invalid{background:rgba(255,50,50,.28) !important;border-color:rgba(255,100,100,.7) !important;
+  box-shadow:0 0 8px rgba(255,60,60,.3) !important;}
+.cell.clearing{animation:explode .45s cubic-bezier(.36,.07,.19,.97) forwards;}
+@keyframes explode{
+  0%  {transform:scale(1);   opacity:1;  filter:brightness(1);}
+  20% {transform:scale(1.45);opacity:1;  filter:brightness(2.5) saturate(2);}
+  45% {transform:scale(1.1); opacity:.7; filter:brightness(1.8);}
+  100%{transform:scale(0) rotate(20deg);opacity:0; filter:brightness(3);}
+}
+.cell.just-placed{animation:land .2s cubic-bezier(.34,1.56,.64,1);}
+@keyframes land{from{transform:scale(.55);filter:brightness(1.8)}to{transform:scale(1);filter:brightness(1)}}
 .cell.frozen{background:rgba(130,210,255,.15)!important;border-color:rgba(130,220,255,.48)!important;cursor:not-allowed;}
 .cell.frozen::after{content:'❄';position:absolute;font-size:8px;bottom:1px;right:1px;opacity:.5;line-height:1;}
 .cell.freeze-anim{animation:freeze .44s cubic-bezier(.34,1.56,.64,1);}
@@ -247,8 +256,8 @@
  
  
  
-.cell.line-ready{background:rgba(255,230,80,.18);border-color:rgba(255,220,60,.5);transition:background .08s,border-color .08s;}
-.cell.line-complete{background:rgba(100,255,160,.28);border-color:rgba(80,255,140,.7);box-shadow:inset 0 0 6px rgba(80,255,140,.25);transition:background .08s,border-color .08s;z-index:1;}
+.cell.line-ready{background:rgba(255,220,30,.28) !important;border-color:rgba(255,210,0,.75) !important;box-shadow:0 0 8px rgba(255,210,0,.3) !important;transition:background .08s,border-color .08s;}
+.cell.line-complete{background:rgba(80,255,140,.38) !important;border-color:rgba(60,255,130,.9) !important;box-shadow:inset 0 0 10px rgba(80,255,140,.4), 0 0 12px rgba(80,255,140,.3) !important;transition:background .08s,border-color .08s;z-index:1;}
 .cell.bomb-zone{background:rgba(255,80,80,.2);border-color:rgba(255,100,80,.55);transition:background .08s;}
 .cell.hint-shape{background:rgba(100,200,255,.22)!important;border-color:rgba(80,180,255,.7)!important;
   box-shadow:inset 0 0 8px rgba(80,200,255,.3);animation:hintPulse 0.8s ease-in-out infinite alternate;}
@@ -256,6 +265,8 @@
 #fscore{position:fixed;pointer-events:none;font-family:'Fredoka One',cursive;font-size:24px;
   color:var(--gold);text-shadow:0 0 14px rgba(255,215,0,.9),0 2px 0 rgba(0,0,0,.4);z-index:999;opacity:0;
   transition:opacity .5s,transform .7s;letter-spacing:.5px;}
+/* Particle canvas overlay */
+#particle-canvas{position:fixed;inset:0;pointer-events:none;z-index:998;}
 </style>
  
 <script>
@@ -279,6 +290,7 @@ if('serviceWorker' in navigator && location.protocol !== 'file:'){
 </script>
 </head>
 <body>
+<canvas id="particle-canvas"></canvas>
 <div id="app">
  
 <!-- GAME -->
@@ -736,8 +748,66 @@ function pickShape(i){
 //  centro geometrico del ghost (non all'ancora del dito).
 // ════════════════════════════════════════
  
+// ════════════════════════════════════════
+//  PARTICLE BURST SYSTEM
+// ════════════════════════════════════════
+(function(){
+  const canvas = document.getElementById('particle-canvas');
+  canvas.width = window.innerWidth; canvas.height = window.innerHeight;
+  window.addEventListener('resize',()=>{ canvas.width=window.innerWidth; canvas.height=window.innerHeight; });
+  const ctx = canvas.getContext('2d');
+  let parts = [];
+  const COLORS = ['#FFD700','#ff6b6b','#ff9f43','#2ecc71','#00d2ff','#f1c40f','#ff5fa2','#a8ff78'];
+  function spawnBurst(x, y, count){
+    for(let i=0;i<count;i++){
+      const angle = (Math.random()*Math.PI*2);
+      const spd = 2.5 + Math.random()*5;
+      const size = 3 + Math.random()*5;
+      parts.push({
+        x, y,
+        vx: Math.cos(angle)*spd,
+        vy: Math.sin(angle)*spd - 1.5,
+        life: 1,
+        decay: 0.028 + Math.random()*0.025,
+        size,
+        color: COLORS[Math.floor(Math.random()*COLORS.length)],
+        rot: Math.random()*Math.PI*2,
+        rotV: (Math.random()-.5)*.3,
+        square: Math.random()>.5
+      });
+    }
+  }
+  window.spawnBurst = spawnBurst;
+  function loop(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    parts = parts.filter(p=>p.life>0.01);
+    for(const p of parts){
+      ctx.save();
+      ctx.globalAlpha = p.life * p.life;
+      ctx.translate(p.x, p.y);
+      ctx.rotate(p.rot);
+      ctx.fillStyle = p.color;
+      if(p.square){
+        ctx.fillRect(-p.size/2,-p.size/2,p.size,p.size);
+      } else {
+        ctx.beginPath();
+        ctx.arc(0,0,p.size/2,0,Math.PI*2);
+        ctx.fill();
+      }
+      ctx.restore();
+      p.x += p.vx; p.y += p.vy;
+      p.vy += 0.18; // gravity
+      p.vx *= 0.96;
+      p.rot += p.rotV;
+      p.life -= p.decay;
+    }
+    requestAnimationFrame(loop);
+  }
+  loop();
+})();
+
 // Offset verticale fisso: il ghost galleggia sopra il dito
-const LIFT_PX = ()=> calcCS() * 1.6;
+const LIFT_PX = ()=> calcCS() * 2.2;
  
 // Centro geometrico della shape (in celle, float)
 function shapeCenterCR(shape){
@@ -788,22 +858,16 @@ function positionGhost(cx, cy){
 function fingerToGridRC(cx, cy){
   const cs = calcCS();
   const liftY = cy - LIFT_PX();
-  // Punto del centro geometrico del ghost
   const [cr,cc] = shapeCenterCR(dragShape);
-  const ghostCX = cx;
-  const ghostCY = liftY;
-  // Trova la cella griglia sotto il centro del ghost
   const gridEl = document.getElementById('grid');
   const gridRect = gridEl.getBoundingClientRect();
-  const relX = ghostCX - gridRect.left;
-  const relY = ghostCY - gridRect.top;
-  const cellStep = cs + 3; // cellSize + gap
-  const centerGridC = Math.round((relX - cs/2) / cellStep);
-  const centerGridR = Math.round((relY - cs/2) / cellStep);
-  // Top-left della forma = centro griglia - ancora centro
-  const topLeftR = Math.round(centerGridR - cr);
-  const topLeftC = Math.round(centerGridC - cc);
-  return [topLeftR, topLeftC];
+  const relX = cx - gridRect.left;
+  const relY = liftY - gridRect.top;
+  const cellStep = cs + 3;
+  // Snap to nearest cell center
+  const centerGridC = Math.round((relX - cc * cellStep) / cellStep);
+  const centerGridR = Math.round((relY - cr * cellStep) / cellStep);
+  return [centerGridR, centerGridC];
 }
  
 function updateDragPreview(cx, cy){
@@ -1142,8 +1206,35 @@ function checkLines(){
   toC.forEach(({t,i})=>{
     ls+=100*(combo>1?combo:1); lines++;
     trackStat('lines',1);
-    if(t==='row'){for(let c=0;c<GS;c++){grid[i][c]=null;if(SET.anim){const el=document.querySelector(`.cell[data-row="${i}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}}}
-    else{for(let r=0;r<GS;r++){grid[r][i]=null;if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${i}"]`);if(el)el.classList.add('clearing');}}}
+    if(t==='row'){
+      for(let c=0;c<GS;c++){
+        grid[i][c]=null;
+        if(SET.anim){const el=document.querySelector(`.cell[data-row="${i}"][data-col="${c}"]`);if(el)el.classList.add('clearing');}
+      }
+      // Particle burst along the row
+      if(SET.anim && window.spawnBurst){
+        const midCell = document.querySelector(`.cell[data-row="${i}"][data-col="${Math.floor(GS/2)}"]`);
+        if(midCell){
+          const r2=midCell.getBoundingClientRect();
+          for(let c=0;c<GS;c+=2){
+            const cel=document.querySelector(`.cell[data-row="${i}"][data-col="${c}"]`);
+            if(cel){const rc=cel.getBoundingClientRect(); window.spawnBurst(rc.left+rc.width/2, rc.top+rc.height/2, 6);}
+          }
+        }
+      }
+    } else {
+      for(let r=0;r<GS;r++){
+        grid[r][i]=null;
+        if(SET.anim){const el=document.querySelector(`.cell[data-row="${r}"][data-col="${i}"]`);if(el)el.classList.add('clearing');}
+      }
+      // Particle burst along the column
+      if(SET.anim && window.spawnBurst){
+        for(let r=0;r<GS;r+=2){
+          const cel=document.querySelector(`.cell[data-row="${r}"][data-col="${i}"]`);
+          if(cel){const rc=cel.getBoundingClientRect(); window.spawnBurst(rc.left+rc.width/2, rc.top+rc.height/2, 6);}
+        }
+      }
+    }
   });
   if(toC.length>=2) runStats.multiLine=Math.max(runStats.multiLine,toC.length);
   trackStat('combo',combo);
